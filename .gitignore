@@ -1,1 +1,10 @@
-venv/
+# Python stuff
+venv
+*.py[cow]
+__pycache__
+
+# emacs stuff
+.#*
+
+# vim stuff
+*.swp
