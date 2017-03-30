@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Get info</title>
+    </head>
+
+    <body>
+        <h1>Info Page</h1>
+
+        <form method="POST">
+            <select id="relation-selector">
+                <span>Entities:</span>
+                <option value="stores">Stores</option>
+                <option value="employees">Employees</option>
+                <option value="products">Products</option>
+                <span>Relationships:</span>
+                <option value="Inventory">Inventory</option>
+                <option value="Employment">Employment</option>
+            </select>
+
+            <input type="submit" />
+        </form>
+
+        <table id="info-results">
+            <tr id="info-results-header-row">
+                {% for header in headers %}
+                <td class="info-results-header">
+                    {{header}}
+                </td>
+                {% endfor %}
+            </tr>
+
+            {% for row in rows %}
+            <tr class="info-results-row">
+                {% for field in row %}
+                <td class="info-results-field">
+                    {{field}}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+    </body>
+</html>

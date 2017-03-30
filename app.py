@@ -7,25 +7,30 @@ from flask import Flask, make_response, render_template
 app = Flask(__name__)
 
 @app.route('/')
-def index():
+def index_page():
     'Landing page'
 
-    return app.send_static_file('index.html')
+    response = app.send_static_file('index.html')
+    response.headers['content'] = 'text/html; charset=utf-8'
+    return response
 
 @app.route('/info/')
-def get_info():
+def get_info_page():
     'Querying page'
 
-    return 'Page to query info from db'
+    rendered = render_template('info.html', headers=('a', 'b'), rows=[(1, 2), (3, 4), (5, 6)])
+    response = make_response(rendered)
+    response.headers['content'] = 'text/html; charset=utf-8'
+    return response
 
 @app.route('/admin/')
-def admin():
+def admin_page():
     'Admin page'
 
     return 'Page to modify database'
 
 @app.route('/login/')
-def login():
+def login_page():
     'Login page (optional bonus points)'
 
     return 'Login functionality not implemented yet'
