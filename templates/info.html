@@ -2,6 +2,8 @@
 <html>
     <head>
         <title>Get info</title>
+        <link rel="stylesheet" type="text/css" href="/static/css/common.css" />
+        <link rel="stylesheet" type="text/css" href="/static/css/info.css" />
     </head>
 
     <body>
@@ -22,14 +24,17 @@
         </form>
 
         <table id="info-results">
-            <tr id="info-results-header-row">
-                {% for header in headers %}
-                <td class="info-results-header">
-                    {{header}}
-                </td>
-                {% endfor %}
-            </tr>
+            <thead>
+                <tr id="info-results-header-row">
+                    {% for header in headers %}
+                    <th class="info-results-header">
+                        {{header}}
+                    </th>
+                    {% endfor %}
+                </tr>
+            </thead>
 
+            <tbody>
             {% for row in rows %}
             <tr class="info-results-row">
                 {% for field in row %}
