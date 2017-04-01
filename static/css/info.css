@@ -1,12 +1,16 @@
-table#info-results {
+#info-results {
     margin-top: 1.5em;
     border-collapse: collapse;
 }
 
-table#info-results td, table#info-results th {
+#info-results td, table#info-results th {
     border: 1px solid black;
 }
 
-table#info-results th {
+#info-results th {
     font-weight: bold;
+}
+
+#query-extra-storage {
+    display: none;
 }

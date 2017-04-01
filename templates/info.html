@@ -2,26 +2,101 @@
 <html>
     <head>
         <title>Get info</title>
+
         <link rel="stylesheet" type="text/css" href="/static/css/common.css" />
         <link rel="stylesheet" type="text/css" href="/static/css/info.css" />
+
+        {% if config['DEBUG'] %}
+        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.js"></script>
+        {% else %}
+        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        {% endif %}
+
+        <script type="text/javascript" src="/static/js/info.js"></script>
     </head>
 
     <body>
         <h1>Info Page</h1>
 
         <form method="POST">
-            <select id="relation-selector">
-                <span>Entities:</span>
-                <option value="stores">Stores</option>
-                <option value="employees">Employees</option>
-                <option value="products">Products</option>
-                <span>Relationships:</span>
-                <option value="Inventory">Inventory</option>
-                <option value="Employment">Employment</option>
+            <select id="query-selector">
+                <option value="" default="default" style="display: none"></option>
+                <optgroup label="Objects">
+                    <option value="table_stores">Stores</option>
+                    <option value="table_employees">Employees</option>
+                    <option value="table_products">Products</option>
+                </optgroup>
+                <optgroup label="Relationships">
+                    <option value="table_inventory">Inventory</option>
+                    <option value="table_employment">Employment</option>
+                </optgroup>
+                <optgroup label="Common queries">
+                    <option value="query_store_inventory">Inventory at store</option>
+                </optgroup>
             </select>
 
+            <span id="query-extra"></span>
             <input type="submit" />
         </form>
+
+        <div id="query-extra-storage">
+            <span data-query-type="table_stores">
+                <input name="city" placeholder="City" />
+            </span>
+
+            <span data-query-type="table_employees">
+                <input name="first_name" placeholder="First Name" />
+                <input name="last_name" placeholder="Last Name" />
+            </span>
+
+            <span data-query-type="table_products">
+                <input name="product_name" placeholder="Product Name" />
+            </span>
+
+            <span data-query-type="table_inventory">
+                <select name="price_comparison">
+                    <option value="none"></option>
+                    <option value="greater">Price greater than</option>
+                    <option value="less">Price less than</option>
+                    <option value="equal">Price equal to</option>
+                </select>
+                <input name="price_value" placeholder="Price (e.g. $12.34)" />
+
+                <select name="amount_comparison">
+                    <option value="none"></option>
+                    <option value="greater">Amount greater than</option>
+                    <option value="less">Amount less than</option>
+                    <option value="equal">Amount equal to</option>
+                </select>
+                <input name="amount-value" placeholder="Amount" />
+            </span>
+
+            <span data-query-type="table_employment">
+                <input name="city" placeholder="City" />
+                <input name="first_name" placeholder="First Name" />
+                <input name="last_name" placeholder="Last Name" />
+            </span>
+
+            <span data-query-type="query_store_inventory">
+                <input name="city" placeholder="City" />
+
+                <select name="price_comparison">
+                    <option value="none"></option>
+                    <option value="greater">Price greater than</option>
+                    <option value="less">Price less than</option>
+                    <option value="equal">Price equal to</option>
+                </select>
+                <input name="price_value" placeholder="Price (e.g. $12.34)" />
+
+                <select name="amount_comparison">
+                    <option value="none"></option>
+                    <option value="greater">Amount greater than</option>
+                    <option value="less">Amount less than</option>
+                    <option value="equal">Amount equal to</option>
+                </select>
+                <input name="amount-value" placeholder="Amount"
+            </span>
+        </div>
 
         <table id="info-results">
             <thead>
