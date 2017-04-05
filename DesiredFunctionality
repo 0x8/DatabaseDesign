@@ -9,6 +9,10 @@ features that we should probably implement:
 
 [ Wishlist ] 
 
+- Registration of new users (passwords stored as bcrypt-sha256 hashes)
+- Password change
+- Only managers can change users to manager status
+
 - Ability for managers (auth via login) to alter employment records
   e.g. add/delete/change employees or their attributes
 
