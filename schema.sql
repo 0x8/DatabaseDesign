@@ -20,14 +20,14 @@ CREATE TABLE IF NOT EXISTS Store (
     state TEXT
 );
 
-CREATE TABLE IF NOT EXISTS Employee (
-    eid SERIAL PRIMARY KEY,
-    role_id INTEGER NOT NULL REFERENCES Roles (role_id)
-);
-
-CREATE TABLE IF NOT EXISTS Roles (
+CREATE TABLE IF NOT EXISTS Role (
     role_id SERIAL PRIMARY KEY,
     role TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS Employee (
+    eid SERIAL PRIMARY KEY,
+    role_id INTEGER NOT NULL REFERENCES Role (role_id)
 );
 
 -- Relationships
@@ -70,4 +70,4 @@ CREATE TABLE IF NOT EXISTS Orders (
     pid INTEGER NOT NULL REFERENCES Product (pid),
     number INTEGER NOT NULL CHECK (number > 0),
     cost NUMERIC NOT NULL CHECK (cost >= 0)
-)
+);
