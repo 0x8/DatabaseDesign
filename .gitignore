@@ -1,3 +1,6 @@
+# Databases
+*.db
+
 # Python stuff
 venv
 *.py[cow]

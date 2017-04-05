@@ -1,38 +1,81 @@
 #!/usr/bin/env python3
 
 import sys
+import os, os.path
+import sqlite3
+import shutil
 
-from flask import Flask, make_response, render_template
+from flask import Flask, make_response, render_template, request, g
+
+import query
 
 app = Flask(__name__)
+app.config['DATABASE'] = os.path.join(app.root_path, 'database.db')
+
+def getdb():
+    if not hasattr(g, 'db'):
+        g.db = sqlite3.connect(app.config['DATABASE'])
+        g.db.row_factory = sqlite3.Row
+    return g.db
+
+@app.cli.command('initdb')
+def initdb():
+    db_path = app.config['DATABASE']
+    if os.path.exists(db_path):
+        print('Database exists already! Backing up first')
+        shutil.move(db_path, db_path + '.bak')
+
+    conn = getdb()
+    with app.openresource('schema.sql') as f:
+        conn.cursor().executescript(f.read())
+    conn.commit()
+    print('Database initialized')
+
+@app.teardown_appcontext
+def closedb(error):
+    if hasattr(g, 'db'):
+        g.db.close()
+
+def run_query(query_type, args):
+    conn = getdb()
+    c = conn.cursor()
+    c.execute(query.queries[query_type], args)
+    return ([col[0] for col in c.description], (row for row in c))
 
 @app.route('/')
 def index_page():
-    'Landing page'
-
     response = app.send_static_file('index.html')
     response.headers['content'] = 'text/html; charset=utf-8'
     return response
 
-@app.route('/info/')
+@app.route('/info/', methods=('GET',))
 def get_info_page():
-    'Querying page'
+    response = make_response(render_template('info.html'))
+    response.headers['content'] = 'text/html; charset=utf-8'
+    return response
 
-    rendered = render_template('info.html', headers=('a', 'b'), rows=[(1, 2), (3, 4), (5, 6)])
+@app.route('/info/', methods=('POST',))
+def post_info_page():
+    query_type = request.form.get('query_type')
+    if query_type is None:
+        rendered = render_template('info.html', error='Must select a query type')
+    else:
+        try:
+            headers, row_iter = run_query(query_type, request.form)
+            rendered = render_template('info.html', headers=headers, rows=row_iter)
+        except KeyError:
+            rendered = render_template('info.html', error='Query type %r not found' % query_type)
+
     response = make_response(rendered)
     response.headers['content'] = 'text/html; charset=utf-8'
     return response
 
 @app.route('/admin/')
 def admin_page():
-    'Admin page'
-
     return 'Page to modify database'
 
 @app.route('/login/')
 def login_page():
-    'Login page (optional bonus points)'
-
     return 'Login functionality not implemented yet'
 
 def main(debug=False, port=8080):

@@ -18,8 +18,8 @@
     <body>
         <h1>Info Page</h1>
 
-        <form method="POST">
-            <select id="query-selector">
+        <form method="POST" action="/info/">
+            <select id="query-selector" name="query_type">
                 <option value="" default="default" style="display: none"></option>
                 <optgroup label="Objects">
                     <option value="table_stores">Stores</option>
@@ -27,8 +27,8 @@
                     <option value="table_products">Products</option>
                 </optgroup>
                 <optgroup label="Relationships">
-                    <option value="table_inventory">Inventory</option>
-                    <option value="table_employment">Employment</option>
+                    <option value="relationship_inventory">Inventory</option>
+                    <option value="relationship_employment">Employment</option>
                 </optgroup>
                 <optgroup label="Common queries">
                     <option value="query_store_inventory">Inventory at store</option>
@@ -53,7 +53,7 @@
                 <input name="product_name" placeholder="Product Name" />
             </span>
 
-            <span data-query-type="table_inventory">
+            <span data-query-type="relationship_inventory">
                 <select name="price_comparison">
                     <option value="none"></option>
                     <option value="greater">Price greater than</option>
@@ -68,17 +68,17 @@
                     <option value="less">Amount less than</option>
                     <option value="equal">Amount equal to</option>
                 </select>
-                <input name="amount-value" placeholder="Amount" />
+                <input name="amount_value" placeholder="Amount" />
             </span>
 
-            <span data-query-type="table_employment">
+            <span data-query-type="relationship_employment">
                 <input name="city" placeholder="City" />
                 <input name="first_name" placeholder="First Name" />
                 <input name="last_name" placeholder="Last Name" />
             </span>
 
             <span data-query-type="query_store_inventory">
-                <input name="city" placeholder="City" />
+                <input name="store_id" placeholder="Store ID" />
 
                 <select name="price_comparison">
                     <option value="none"></option>
@@ -94,7 +94,7 @@
                     <option value="less">Amount less than</option>
                     <option value="equal">Amount equal to</option>
                 </select>
-                <input name="amount-value" placeholder="Amount"
+                <input name="amount_value" placeholder="Amount"
             </span>
         </div>
 
