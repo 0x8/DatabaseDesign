@@ -1,0 +1,42 @@
+This files is used to help guide development. Below is a list of desired
+features that we should probably implement:
+
+[ In Progress ]
+
+- Example data generation
+- Login Page
+
+
+[ Wishlist ] 
+
+- Ability for managers (auth via login) to alter employment records
+  e.g. add/delete/change employees or their attributes
+
+- Ability to alter whats on special
+- Ability to alter price
+- Ability to update store information
+- Ability to query for a stores numbers (gross profit = sales_total
+        - inventory_cost - payroll_total for a given store)
+
+- Search for item by store, city, zip, or state
+  also search for store
+
+- Set a store as the "home store" (basically just the sid)
+
+- Menu bar with options dependent upon login status:
+    No login:
+        Store locater
+        Items search
+        Deals? (shows items on special at given store)
+    
+    Customer login:
+        Cart (keep track of pid,sid,price, total)
+        
+    Manager/Store official:
+        Manager Portal
+            - Alter store info
+            - Alter sale info
+            - Alter employement
+        
+
+[ Tossed Ideas ] 
