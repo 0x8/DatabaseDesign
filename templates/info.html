@@ -18,6 +18,9 @@
     <body>
         <h1>Info Page</h1>
 
+        {% if error %}
+        <h4 class="error">{{error}}</h4>
+
         <form method="POST" action="/info/">
             <select id="query-selector" name="query_type">
                 <option value="" default="default" style="display: none"></option>

@@ -14,3 +14,7 @@
 #query-extra-storage {
     display: none;
 }
+
+.error {
+    color: red;
+}
