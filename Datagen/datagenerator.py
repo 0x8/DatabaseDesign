@@ -22,14 +22,7 @@ let postgres know what order the elements are printed in and therefore how to
 insert them into the database appropriately.
 '''
 
-product_header = 'name,color'
-supplier_header = 'name'
-store_hearder = 'zip,address,city,telno'
-inventory_header = 'sid,pid,price,qty,special'
-prod_supplier_header = 'txid,supid,pid,cost,qty'
-employement_header = 'sid,eid'
-employee_header = 'roleid,firstname,lastname,pay,hourly'
-role_header = 'roleid,rolename'
+
 
 
 #================================== Classes ===================================#
@@ -317,10 +310,23 @@ def pname_gen():
     while True:
         yield random.choice(products)
 
+def color_gen():
+    colors = ['Red','Blue','Green','White','Black','Brown','Orange','Yellow',
+              'Purple','Pink','Teal','Maroon']
+    while True:
+        yield random.choice(colors)
 
 
 # Generate the actual CSV files
 def gen_rows(n=100):
+    
+    supplier_header = 'name'
+    store_hearder = 'zip,address,city,telno'
+    inventory_header = 'sid,pid,price,qty,special'
+    prod_supplier_header = 'txid,supid,pid,cost,qty'
+    employement_header = 'sid,eid'
+    employee_header = 'roleid,firstname,lastname,pay,hourly'
+    role_header = 'roleid,role'   
     
     # roles.csv
     with open('./Data/roles.csv','w') as f:
@@ -330,8 +336,12 @@ def gen_rows(n=100):
 
     # products.csv
     with open('./Data/products.csv','w') as f:
+        
+        product_header = 'name,color'
         for i in range(n):
-            pass
+            pname = next(pname_gen)
+            color = next(color_gen)
+            line = '{0},{1}'.format(pname, color)
 
     # stores.csv
     with open('./Data/stores.csv','w') as f:
@@ -340,8 +350,13 @@ def gen_rows(n=100):
 
     # users.csv
     with open('./Data/users.csv','w') as f:
+        user_header = 'username,password'
+        f.write(user_header)
         for i in range(n):
-            pass
+            username = next(uname_gen)
+            password = next(pass_gen)
+            line = '{0},{1}'.format(username,password)
+            f.write(line)
 
 # =============== [ Main ] ============== #
 # Create the data directory if it does not exist already
