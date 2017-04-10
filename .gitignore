@@ -1,6 +1,9 @@
 # Databases
 *.db
 
+# Private configuration stuffs
+config.py
+
 # Python stuff
 venv
 *.py[cow]

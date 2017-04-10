@@ -2,32 +2,28 @@
 
 import sys
 import os, os.path
-import sqlite3
+import psycopg2
 import shutil
 
 from flask import Flask, make_response, render_template, request, g
 
 import query
+import config
 
 app = Flask(__name__)
-app.config['DATABASE'] = os.path.join(app.root_path, 'database.db')
 
 def getdb():
     if not hasattr(g, 'db'):
-        g.db = sqlite3.connect(app.config['DATABASE'])
-        g.db.row_factory = sqlite3.Row
+        g.db = psycopg2.connect(host=config.db_host, port=config.db_port,
+                                dbname=config.db_name, password=config.db_password)
     return g.db
 
 @app.cli.command('initdb')
 def initdb():
-    db_path = app.config['DATABASE']
-    if os.path.exists(db_path):
-        print('Database exists already! Backing up first')
-        shutil.move(db_path, db_path + '.bak')
-
     conn = getdb()
+    cur = conn.cursor()
     with app.openresource('schema.sql') as f:
-        conn.cursor().executescript(f.read())
+        cur.executescript(f.read())
     conn.commit()
     print('Database initialized')
 
@@ -37,10 +33,11 @@ def closedb(error):
         g.db.close()
 
 def run_query(query_type, args):
+    args = {k:(v if v else None) for k,v in args.items()}
     conn = getdb()
-    c = conn.cursor()
-    c.execute(query.queries[query_type], args)
-    return ([col[0] for col in c.description], (row for row in c))
+    cur = conn.cursor()
+    cur.execute(query.queries[query_type], args)
+    return ([col[0] for col in cur.description], (row for row in cur))
 
 @app.route('/')
 def index_page():
