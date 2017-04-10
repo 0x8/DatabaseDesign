@@ -11,11 +11,13 @@ initializing a DB. This gives some example data to work with for demonstrative
 purposes.
 
 '''
-from passlib.hash import bcrypt_sha256
+import decimal
 import random
 import os, os.path
 import csv
 import itertools
+
+from passlib.hash import bcrypt_sha256
 
 '''
 These are the headers that should preced each list of rows in csv form. They
@@ -36,15 +38,11 @@ rows in csv form. This allows quick and easy csv generation.
 '''
 
 class DictLike:
-    def __getitem__(self, obj):
-        print('getting %r' % obj)
-        return self._dict[obj]
-
-    def get(self, obj, default):
-        return self._dict.get(obj, default)
-
     def __iter__(self):
         return iter(self._dict)
+
+    def __getattr__(self, attr):
+        return getattr(self._dict, attr)
 
 class product(DictLike):
     '''
@@ -124,7 +122,7 @@ class employment(DictLike):
         self._dict = {'sid': sid, 'eid': eid}
 
 class employee(DictLike):
-    fields = ('eid', 'firstname', 'lastname', 'pay', 'hourly')
+    fields = ('eid', 'firstname', 'lastname', 'roleid', 'pay', 'hourly')
 
     def __init__(self, eid, firstname, lastname, roleid, pay, hourly):
         self._dict = {'eid': eid, 'firstname': firstname, 'lastname': lastname,
@@ -193,6 +191,23 @@ def lname_gen():
     while True:
         yield random.choice(lnames)
 
+# Generate random decimal numbers
+def decimal_gen(min, max, precision):
+    scale = 10**precision
+    while True:
+        yield decimal.Decimal(random.randint(min*scale, max*scale)) / scale
+
+# Generates random bools
+def bool_gen():
+    while True:
+        yield bool(random.getrandbits(1))
+
+# Generate employees
+@saves_to_file('./Data/employees.csv', employee)
+def gen_employees():
+    return itertools.starmap(employee, zip(itertools.count(1), fname_gen(),
+                                           lname_gen(), range(1, len(roles)+1),
+                                           decimal_gen(10, 60000, 2), bool_gen()))
 
 # Generate usernames
 def uname_gen():
@@ -270,13 +285,11 @@ def gen_stores():
     return itertools.starmap(store, zip(itertools.count(1), zip_gen(), address_gen(),
                                         city_gen(), state_gen(), telno_gen()))
 
+# A list of available roles
+roles = ['Cashier','Manager','Stocker','Human Resources', 'Information Technology']
 # Generate the roles
 @saves_to_file('./Data/roles.csv', role)
 def gen_roles():
-    # A list of available roles
-    roles = ['Cashier','Manager','Stocker','Human Resources',
-             'Information Technology']
-
     return itertools.starmap(role, zip(itertools.count(1), roles))
 
 # Generate random product name
@@ -330,5 +343,6 @@ if not os.path.exists('Data'):
     os.mkdir('Data')
 elif not os.path.isdir('Data'):
     e = RuntimeError('Path %r exists but is not a directory' % 'Data')
+    raise e
 
 gen_rows(10)
