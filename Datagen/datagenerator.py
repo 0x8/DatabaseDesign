@@ -212,12 +212,6 @@ def bool_gen():
     while True:
         yield bool(random.getrandbits(1))
 
-# Generate employees
-def gen_employees():
-    return itertools.starmap(employee, zip(itertools.count(1), fname_gen(),
-                                           lname_gen(), range(1, len(roles)+1),
-                                           decimal_gen(10, 60000, 2), bool_gen()))
-
 # Generate usernames
 def uname_gen():
     # A list of awful usernames I made up just now
@@ -235,10 +229,6 @@ def pass_gen():
                   'SodiumB1c4rb0n4t3','Def4ult5']
     while True:
         yield bcrypt_sha256.hash(random.choice(passwords))
-
-# Generate Users
-def user_gen():
-    return itertools.starmap(user, zip(itertools.count(1), uname_gen(), pass_gen()))
 
 # Generate random telephone number
 def telno_gen():
@@ -287,17 +277,6 @@ def zip_gen():
     while True:
         yield str(random.randint(10000, 99999))
 
-# Generate stores
-def gen_stores():
-    return itertools.starmap(store, zip(itertools.count(1), zip_gen(), address_gen(),
-                                        city_gen(), state_gen(), telno_gen()))
-
-# A list of available roles
-roles = ['Cashier','Manager','Stocker','Human Resources', 'Information Technology']
-# Generate the roles
-def gen_roles():
-    return itertools.starmap(role, zip(itertools.count(1), roles))
-
 # Generate random product name
 def pname_gen():
     # A list of products
@@ -316,8 +295,58 @@ def color_gen():
     while True:
         yield random.choice(colors)
 
-def product_gen():
-    return itertools.starmap(product, zip(itertools.count(1), pname_gen(), color_gen()))
+
+#============================== Object Creation ===============================#
+
+def make_roles(n):
+    roles = ['Cashier', 'Manager', 'Stocker', 'Human Resources', 'Information Technology']
+    return [role(*args) for args in zip(range(1, n+1), roles)]
+
+def make_employees(n, roles):
+    fnames = fname_gen()
+    lnames = lname_gen()
+    wages = decimal_gen(10, 25, 2)
+    salaries = decimal_gen(40000, 100000, 2)
+    bools = bool_gen()
+
+    employees = []
+    for id in range(1, n+1):
+        fname, lname, hourly = map(next, (fnames, lnames, bools))
+        pay = next(wages) if hourly else next(salaries)
+        roleid = random.choice(roles)['roleid']
+        employees.append(employee(id, fname, lname, roleid, pay, hourly))
+
+    return employees
+
+def make_employment(n, employees, stores):
+    pass
+
+def make_stores(n):
+    return [store(*args)
+            for args in zip(range(1, n+1), zip_gen(), address_gen(),
+                            city_gen(), state_gen(), telno_gen())]
+
+def make_products(n):
+    return [product(*args) for args in zip(range(1, n+1), pname_gen(), color_gen())]
+
+def make_inventory(n, stores, products):
+    pass
+
+def make_transactions(n, stores, products):
+    pass
+
+def make_suppliers(n):
+    pass
+
+def make_supplies(n, products, suppliers):
+    pass
+
+def make_orders(n, products, stores, supplies):
+    pass
+
+def make_users(n):
+    return [user(*args) for args in zip(range(1, n+1), uname_gen(), pass_gen())]
+
 
 # Generate the actual CSV files
 def gen_rows(n=100):
@@ -330,18 +359,19 @@ def gen_rows(n=100):
     employee_header = 'roleid,firstname,lastname,pay,hourly'
     role_header = 'roleid,role'
 
+    all_objects = {}
+
     for path, gen, cls in _file_class_assocs:
+        all_objects[cls] = (path, [])
+        cur_list = all_objects[cls][1]
+
+        for _, obj in gen(n, all_objects):
+            cur_list.append(obj)
+
         with open(path, 'w') as f:
             print(cls.fields)
             writer = csv.DictWriter(f, fieldnames=cls.fields)
             writer.writeheader()
-
-            # range() here just limits otherwise infinite generators
-            for _, obj in zip(range(n), gen()):
-                print(obj)
-                print(obj._dict)
-                writer.writerow(obj)
-
 # =============== [ Main ] ============== #
 # Create the data directory if it does not exist already
 if not os.path.exists('Data'):
