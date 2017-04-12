@@ -6,7 +6,7 @@ Kevin Orr
 
 Database Design, data generator for final project.
 
-This program generates several csv files in the ./Data directory for use when
+This program generates several csv files in the Data/ directory for use when
 initializing a DB. This gives some example data to work with for demonstrative
 purposes.
 
@@ -25,7 +25,7 @@ let postgres know what order the elements are printed in and therefore how to
 insert them into the database appropriately.
 '''
 
-
+THIS_FILE_PATH = os.path.dirname(os.path.realpath(__file__))
 
 
 #================================== Classes ===================================#
@@ -44,6 +44,15 @@ class DictLike:
     def __getattr__(self, attr):
         return getattr(self._dict, attr)
 
+# Save dict of class -> string associating object classes to target files
+_file_class_assocs = []
+def saves_to_file(path):
+    def wrapper(cls):
+        _file_class_assocs[cls] = os.path.join(THIS_FILE_PATH, path)
+        return cls
+    return wrapper
+
+@saves_to_file('Data/products.csv')
 class product(DictLike):
     '''
     This class holds products. The attributes are:
@@ -60,6 +69,7 @@ class product(DictLike):
     def __init__(self, id, name, color):
         self._dict = {'pid': id, 'name': name, 'color': color}
 
+@saves_to_file('Data/suppliers.csv')
 class supplier(DictLike):
     '''
     This class ties supplier names to their IDs. The attributes are:
@@ -73,6 +83,7 @@ class supplier(DictLike):
     def __init__(self, id, name):
         self._dict = {'supid': id, 'name': name}
 
+@saves_to_file('Data/stores.csv')
 class store(DictLike):
     '''
     This class holds basic information about a store. The attributes are:
@@ -91,6 +102,7 @@ class store(DictLike):
         self._dict = {'sid': id, 'address': address, 'city': city, 'state': state,
                       'zip': zip, 'telno': telno}
 
+@saves_to_file('Data/inventory.csv')
 class inventory(DictLike):
     '''
     This class contains the inventory information for any given store. It does
@@ -115,12 +127,14 @@ class prod_supplier(DictLike):
     def __init__(self, txid, supid, pid, cost, qty):
         self._dict = {'supid': supid, 'pid': pid, 'cost': cost, 'qty': qty}
 
+@saves_to_file('Data/employment.csv')
 class employment(DictLike):
     fields = ('sid', 'eid')
 
     def __init__(self, sid, eid):
         self._dict = {'sid': sid, 'eid': eid}
 
+@saves_to_file('Data/employees.csv')
 class employee(DictLike):
     fields = ('eid', 'firstname', 'lastname', 'roleid', 'pay', 'hourly')
 
@@ -128,18 +142,21 @@ class employee(DictLike):
         self._dict = {'eid': eid, 'firstname': firstname, 'lastname': lastname,
                       'roleid': roleid, 'pay': pay, 'hourly': hourly}
 
+@saves_to_file('Data/roles.csv')
 class role(DictLike):
     fields = ('roleid', 'role')
 
     def __init__(self, roleid, role):
         self._dict = {'roleid': roleid, 'role': role}
 
+@saves_to_file('Data/orders.csv')
 class order(DictLike):
     fields = ('oid', 'sid', 'pid', 'num', 'cost')
 
     def __init__(self, sid, pid, num, cost):
         self._dict = {'sid': sid, 'pid': pid, 'num': num, 'cost': cost}
 
+@saves_to_file('Data/transactions.csv')
 class transaction(DictLike):
     '''
     This holds records of transactions per store. A good idea for maintaining
@@ -154,6 +171,7 @@ class transaction(DictLike):
     def __init__(self, txid, sid, amount):
         self._dict = {'txid': txid, 'sid': sid, 'amount': amount}
 
+@saves_to_file('Data/users.csv')
 class user(DictLike):
     fields = ('uid', 'username', 'password')
 
@@ -162,14 +180,6 @@ class user(DictLike):
 
 
 #================================= Generator ==================================#
-
-# Save list of generators as well as which files to write each to
-_file_class_assocs = []
-def saves_to_file(path, return_class):
-    def wrapper(gen):
-        _file_class_assocs.append((path, gen, return_class))
-        return gen
-    return wrapper
 
 # Generate random first name
 def fname_gen():
@@ -203,7 +213,6 @@ def bool_gen():
         yield bool(random.getrandbits(1))
 
 # Generate employees
-@saves_to_file('./Data/employees.csv', employee)
 def gen_employees():
     return itertools.starmap(employee, zip(itertools.count(1), fname_gen(),
                                            lname_gen(), range(1, len(roles)+1),
@@ -228,7 +237,6 @@ def pass_gen():
         yield bcrypt_sha256.hash(random.choice(passwords))
 
 # Generate Users
-@saves_to_file('./Data/users.csv', user)
 def user_gen():
     return itertools.starmap(user, zip(itertools.count(1), uname_gen(), pass_gen()))
 
@@ -280,7 +288,6 @@ def zip_gen():
         yield str(random.randint(10000, 99999))
 
 # Generate stores
-@saves_to_file('./Data/stores.csv', store)
 def gen_stores():
     return itertools.starmap(store, zip(itertools.count(1), zip_gen(), address_gen(),
                                         city_gen(), state_gen(), telno_gen()))
@@ -288,7 +295,6 @@ def gen_stores():
 # A list of available roles
 roles = ['Cashier','Manager','Stocker','Human Resources', 'Information Technology']
 # Generate the roles
-@saves_to_file('./Data/roles.csv', role)
 def gen_roles():
     return itertools.starmap(role, zip(itertools.count(1), roles))
 
@@ -310,7 +316,6 @@ def color_gen():
     while True:
         yield random.choice(colors)
 
-@saves_to_file('./Data/products.csv', product)
 def product_gen():
     return itertools.starmap(product, zip(itertools.count(1), pname_gen(), color_gen()))
 
