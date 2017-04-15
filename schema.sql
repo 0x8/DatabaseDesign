@@ -11,26 +11,26 @@ GRANT ALL ON SCHEMA Public TO postgres;
 GRANT ALL ON SCHEMA Public TO public;
 
 -- Products and suppliers
-CREATE TABLE IF NOT EXISTS Product (
+CREATE TABLE Products (
     pid SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     color TEXT
 );
 
-CREATE TABLE IF NOT EXISTS Supplier (
+CREATE TABLE Suppliers (
     supid SERIAL PRIMARY KEY,
     name TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS Supplies (
-    pid INTEGER NOT NULL REFERENCES Product (pid),
+CREATE TABLE Supplies (
+    pid INTEGER NOT NULL REFERENCES Products (pid),
     cost NUMERIC NOT NULL CHECK (cost >= 0),
     qty INTEGER NOT NULL CHECK (qty > 0),
-    supid INTEGER NOT NULL REFERENCES Supplier (supid)
+    supid INTEGER NOT NULL REFERENCES Suppliers (supid)
 );
 
 -- Stores
-CREATE TABLE IF NOT EXISTS Store (
+CREATE TABLE Stores (
     sid SERIAL PRIMARY KEY,
     address TEXT,
     city TEXT,
@@ -39,52 +39,54 @@ CREATE TABLE IF NOT EXISTS Store (
     telno TEXT
 );
 
-CREATE TABLE IF NOT EXISTS Inventory (
-    sid INTEGER NOT NULL REFERENCES Supplier (supid),
-    pid INTEGER NOT NULL REFERENCES Product (pid),
+CREATE TABLE Inventory (
+    sid INTEGER NOT NULL REFERENCES Stores (sid),
+    pid INTEGER NOT NULL REFERENCES Products (pid),
     price NUMERIC NOT NULL CHECK (price >= 0),
     stock INTEGER NOT NULL CHECK (stock >= 0),
     special BOOL NOT NULL
 );
 
 -- Orders from product suppliers
-CREATE TABLE IF NOT EXISTS Orders (
+CREATE TABLE Orders (
     oid SERIAL PRIMARY KEY,
-    sid INTEGER NOT NULL REFERENCES Store (sid),
-    pid INTEGER NOT NULL REFERENCES Product (pid),
+    sid INTEGER NOT NULL REFERENCES Stores (sid),
+    pid INTEGER NOT NULL REFERENCES Products (pid),
     number INTEGER NOT NULL CHECK (number > 0),
     cost NUMERIC NOT NULL CHECK (cost >= 0)
 );
 
 -- Customer purchases
-CREATE TABLE IF NOT EXISTS Transaction (
+CREATE TABLE Transactions (
     txid SERIAL PRIMARY KEY,
-    sid INTEGER NOT NULL REFERENCES Store (sid),
+    sid INTEGER NOT NULL REFERENCES Stores (sid),
+    pid INTEGER NOT NULL REFERENCES Products (pid),
+    price NUMERIC NOT NULL CHECK (price >= 0),
     amount NUMERIC NOT NULL
 );
 
 -- Employees
-CREATE TABLE IF NOT EXISTS Role (
-    role_id SERIAL PRIMARY KEY,
+CREATE TABLE Roles (
+    roleid SERIAL PRIMARY KEY,
     role TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS Employee (
+CREATE TABLE Employees (
     eid SERIAL PRIMARY KEY,
     firstname TEXT NOT NULL,
     lastname TEXT NOT NULL,
     hourly BOOL NOT NULL,
     pay NUMERIC NOT NULL CHECK (pay >= 0),
-    role_id INTEGER NOT NULL REFERENCES Role (role_id)
+    roleid INTEGER NOT NULL REFERENCES Roles (roleid)
 );
 
-CREATE TABLE IF NOT EXISTS Employment (
-    sid INTEGER NOT NULL REFERENCES Store (sid),
-    eid INTEGER NOT NULL REFERENCES Employee (eid)
+CREATE TABLE Employment (
+    sid INTEGER NOT NULL REFERENCES Stores (sid),
+    eid INTEGER NOT NULL REFERENCES Employees (eid)
 );
 
 -- Users of our site
-CREATE TABLE IF NOT EXISTS Users (
+CREATE TABLE Users (
     uid SERIAL PRIMARY KEY,
     username TEXT NOT NULL,
     password TEXT NOT NULL,

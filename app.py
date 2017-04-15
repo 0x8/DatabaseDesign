@@ -9,6 +9,7 @@ from flask import Flask, make_response, render_template, request, g
 
 import query
 import config
+import datagenerator
 
 app = Flask(__name__)
 
@@ -20,11 +21,13 @@ def getdb():
 
 @app.cli.command('initdb')
 def initdb():
-    conn = getdb()
-    cur = conn.cursor()
-    with app.openresource('schema.sql') as f:
-        cur.executescript(f.read())
-    conn.commit()
+    with getdb() as conn:
+        with conn.cursor() as cur:
+            with open('schema.sql') as f:
+                cur.execute(f.read())
+
+        datagenerator.write_tables_db(100, conn)
+
     print('Database initialized')
 
 @app.teardown_appcontext

@@ -16,6 +16,7 @@ import random
 import os, os.path
 import csv
 import itertools
+from collections import OrderedDict
 
 from passlib.hash import bcrypt_sha256
 
@@ -72,7 +73,8 @@ def pass_gen():
     passwords = [ 'Hunter2','__Hunter2','Password','P@$$W0rd','Adm1n',
                   'SodiumB1c4rb0n4t3','Def4ult5']
     for password in random_choice_gen(passwords):
-        yield bcrypt_sha256.hash(password)
+        #yield bcrypt_sha256.hash(password)
+        yield password
 
 
 # Generate random telephone number
@@ -225,7 +227,7 @@ def make_inventory(n, stores, products):
     self.special = whether the item is on special in a given store
 
     '''
-    fields = ('sid', 'pid', 'price', 'qty', 'special')
+    fields = ('sid', 'pid', 'price', 'stock', 'special')
 
     price_gen = decimal_gen(10, 100, 2)
     special_gen = bool_gen()
@@ -234,9 +236,9 @@ def make_inventory(n, stores, products):
         sid = random.choice(stores)[0]
         pid = random.choice(products)[0]
         price = next(price_gen)
-        amount = random.randint(1, 1000)
+        stock = random.randint(1, 1000)
         special = next(special_gen)
-        inventory.append((sid, pid, price, amount, special))
+        inventory.append((sid, pid, price, stock, special))
 
     return (fields, inventory)
 
@@ -252,16 +254,16 @@ def make_transactions(n, stores, products):
     amount = total for the transaction
     '''
 
-    fields = ('txid', 'sid', 'pid', 'cost', 'amount')
+    fields = ('txid', 'sid', 'pid', 'price', 'amount')
 
     price_gen = decimal_gen(10, 100, 2)
     transactions = []
     for txid in range(1, n+1):
         sid = random.choice(stores)[0]
         pid = random.choice(products)[0]
-        cost = next(price_gen)
+        price = next(price_gen)
         amount = random.randint(1, 10)
-        transactions.append((txid, sid, pid, cost, amount))
+        transactions.append((txid, sid, pid, price, amount))
 
     return (fields, transactions)
 
@@ -292,66 +294,82 @@ def make_suppliers(n):
 #     return (fields, supplies)
 
 def make_orders(n, products, stores, suppliers):
-    fields = ('oid', 'sid', 'pid', 'num', 'cost')
+    fields = ('oid', 'sid', 'pid', 'number', 'cost')
     orders = []
     price_gen = decimal_gen(1000, 100000, 2)
     for oid in range(1, n+1):
         sid = random.choice(stores)[0]
         pid = random.choice(products)[0]
-        num = random.randint(100, 1000)
+        number = random.randint(100, 1000)
         cost = next(price_gen)
-        orders.append((oid, sid, pid, num, cost))
+        orders.append((oid, sid, pid, number, cost))
 
     return (fields, orders)
 
 def make_users(n):
-    fields = ('uid', 'username', 'password')
-    values = list(zip(range(1, n+1), uname_gen(), pass_gen()))
+    fields = ('uid', 'username', 'password', 'admin')
+    values = list(zip(range(1, n+1), uname_gen(), pass_gen(), bool_gen()))
     return (fields, values)
 
 
 # Generate the actual CSV files
-def write_csv_tables(n=100):
-    tables = {}
+def create_tables(n):
+    tables = OrderedDict()
 
-    print('Creating roles')
+    #print('Creating roles')
     tables['roles'] = roles = make_roles(n)
 
-    print('Creating employees')
+    #print('Creating employees')
     tables['employees'] = employees = make_employees(n, roles[1])
 
-    print('Creating stores')
+    #print('Creating stores')
     tables['stores'] = stores = make_stores(n)
 
-    print('Creating employment')
+    #print('Creating employment')
     tables['employment'] = employment = make_employment(n, employees[1], stores[1])
 
-    print('Creating products')
+    #print('Creating products')
     tables['products'] = products = make_products(n)
 
-    print('Creating inventory')
+    #print('Creating inventory')
     tables['inventory'] = inventory = make_inventory(n, stores[1], products[1])
 
-    print('Creating transactions')
+    #print('Creating transactions')
     tables['transactions'] = transactions = make_transactions(n, stores[1], products[1])
 
-    print('Creating suppliers')
+    #print('Creating suppliers')
     tables['suppliers'] = suppliers = make_suppliers(n)
 
-    print('Creating orders')
+    #print('Creating orders')
     tables['orders'] = orders = make_orders(n, products[1], stores[1], suppliers[1])
 
-    print('Creating users')
+    #print('Creating users')
     tables['users'] = users = make_users(n)
+
+    return tables
+
+def write_tables_csv(n):
+    tables = create_tables()
 
     for tablename, table in tables.items():
         path = os.path.join(THIS_FILE_PATH, 'data', tablename + '.csv')
         with open(path, 'w') as f:
-            print('Writing {} rows to {}'.format(len(table[1]), path))
+            #print('Writing {} rows to {}'.format(len(table[1]), path))
             writer = csv.writer(f)
             writer.writerow(table[0])
             writer.writerows(table[1])
 
+def write_tables_db(n, conn):
+    tables = create_tables(n)
+
+    with conn.cursor() as c:
+        for tablename, table in tables.items():
+            fieldspec = '(' + ','.join(table[0]) + ')'
+            query = 'insert into {} {} values %s'.format(tablename, fieldspec)
+            print(query)
+            for row in table[1]:
+                print(row)
+                c.execute(query, (row,))
 
 
 # =============== [ Main ] ============== #
@@ -363,4 +381,4 @@ if __name__ == '__main__':
         e = RuntimeError('Path %r exists but is not a directory' % 'data')
         raise e
 
-    write_csv_tables(100)
+    write_tables_csv(100)
