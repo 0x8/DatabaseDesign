@@ -6,7 +6,7 @@ Kevin Orr
 
 Database Design, data generator for final project.
 
-This program generates several csv files in the Data/ directory for use when
+This program generates several csv files in the data/ directory for use when
 initializing a DB. This gives some example data to work with for demonstrative
 purposes.
 
@@ -345,7 +345,7 @@ def write_csv_tables(n=100):
     tables['users'] = users = make_users(n)
 
     for tablename, table in tables.items():
-        path = os.path.join(THIS_FILE_PATH, 'Data', tablename + '.csv')
+        path = os.path.join(THIS_FILE_PATH, 'data', tablename + '.csv')
         with open(path, 'w') as f:
             print('Writing {} rows to {}'.format(len(table[1]), path))
             writer = csv.writer(f)
@@ -357,10 +357,10 @@ def write_csv_tables(n=100):
 # =============== [ Main ] ============== #
 if __name__ == '__main__':
     # Create the data directory if it does not exist already
-    if not os.path.exists('Data'):
-        os.mkdir('Data')
-    elif not os.path.isdir('Data'):
-        e = RuntimeError('Path %r exists but is not a directory' % 'Data')
+    if not os.path.exists('data'):
+        os.mkdir('data')
+    elif not os.path.isdir('data'):
+        e = RuntimeError('Path %r exists but is not a directory' % 'data')
         raise e
 
     write_csv_tables(100)
