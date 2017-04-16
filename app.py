@@ -4,6 +4,7 @@ import sys
 import os, os.path
 import psycopg2
 import shutil
+from decimal import Decimal
 
 from flask import Flask, make_response, render_template, request, g
 
@@ -58,7 +59,12 @@ def run_query(query_type, args):
     with getdb() as conn:
         cur = conn.cursor()
         cur.execute(query.queries[query_type], args)
-        return ([col[0] for col in cur.description], (row for row in cur))
+        rows = [list(row) for row in cur.fetchall()]
+        for row in rows:
+            for i, value in enumerate(row):
+                if isinstance(value, Decimal):
+                    row[i] = '{:.2f}'.format(value)
+        return ([col[0] for col in cur.description], rows)
 
 
 
