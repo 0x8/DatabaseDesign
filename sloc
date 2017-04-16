@@ -1,0 +1,6 @@
+#!/bin/bash
+
+shopt -s globstar
+shopt -s nullglob
+
+cat *.py schema.sql {templates,static}/**/*.{html,css,js} | wc -l
