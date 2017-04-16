@@ -8,8 +8,19 @@ import shutil
 from flask import Flask, make_response, render_template, request, g
 
 import query
-import config
 import datagenerator
+
+class ConfigError(RuntimeError):
+    pass
+
+try:
+    import config
+except ImportError:
+    raise ConfigError('Must supply a config.py. See README.md')
+
+for var in 'db_host', 'db_port', 'db_name', 'db_password':
+    if not hasattr(config, var):
+        raise ConfigError('Make sure config.py defines {}. See README.md'.format(var))
 
 app = Flask(__name__)
 
@@ -62,7 +73,8 @@ def post_info_page():
     else:
         try:
             headers, row_iter = run_query(query_type, request.form)
-            rendered = render_template('info.html', headers=headers, rows=row_iter)
+            rendered = render_template('info.html', query_type=query_type,
+                                       headers=headers, rows=row_iter)
         except KeyError:
             rendered = render_template('info.html', error='Query type %r not found' % query_type)
 
@@ -77,20 +89,3 @@ def admin_page():
 @app.route('/login/')
 def login_page():
     return 'Login functionality not implemented yet'
-
-def main(debug=False, port=8080):
-    if debug:
-        app.run('127.0.0.1', port, debug=True)
-    else:
-        app.run('0.0.0.0', port, debug=False)
-
-if __name__ == '__main__':
-    USAGE = '%s [debug] [<port>]' % sys.argv[0]
-
-    debug = 'debug' in sys.argv
-    if debug:
-        port = 8080 if len(sys.argv) < 3 else int(sys.argv[2])
-    else:
-        port = 8080 if len(sys.argv) < 2 else int(sys.argv[1])
-
-    main(debug, port)

@@ -12,10 +12,20 @@ Install python requirements using pip:
 Note: if you are not using a `virtualenv` and pip complains about permissions,
 add the `--user` flag to `pip install`.
 
+Setup `config.py` to point to the right postgres database. Example:
+
+    db_host = 'localhost'
+    db_port = 5432
+    db_name = 'my_database_name'
+    db_password = 'my_password'
+
 ## Running
 
-    USAGE: ./app.py [debug] [<port>]
+    export FLASK_APP=app.py
+    flask <command> [<args>]
     
-    debug    If present, run Flask in debug mode and only bind to localhost
-             If not present, run Flask in production mode and bind to 0.0.0.0
-    port     Port to run app on, defaults to 8080
+#### Commands
+
+* `initdb` Initializes databse with random information from `datagenerator.py`
+* `run` Runs the flask web server
+  * `--debugger`/`--no-debugger` Turn on (or off) the flask debugger. Off by default.
