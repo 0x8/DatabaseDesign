@@ -48,10 +48,11 @@ def closedb(error):
 
 def run_query(query_type, args):
     args = {k:(v if v else None) for k,v in args.items()}
-    conn = getdb()
-    cur = conn.cursor()
-    cur.execute(query.queries[query_type], args)
-    return ([col[0] for col in cur.description], (row for row in cur))
+    with getdb() as conn:
+        cur = conn.cursor()
+        cur.execute(query.queries[query_type], args)
+        return ([col[0] for col in cur.description], (row for row in cur))
+
 
 @app.route('/')
 def index_page():

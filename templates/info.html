@@ -13,6 +13,16 @@
         {% endif %}
 
         <script type="text/javascript" src="/static/js/info.js"></script>
+
+        {% if query_type is defined %}
+        <script type="text/javascript">
+            $(document).ready(function(){
+                $('option[value="{{query_type}}"]').attr('selected', '');
+                $('#query-selector').trigger('change');
+            });
+        </script>
+        {% endif %}
+
     </head>
 
     <body>
@@ -24,16 +34,22 @@
 
         <form method="POST" action="/info/">
             <select id="query-selector" name="query_type">
-                <option value="" default="default" style="display: none"></option>
+                {% if query_type is not defined %}
+                <option value="" selected style="display: none">
+                </option>
+                {% endif %}
+
                 <optgroup label="Objects">
                     <option value="table_stores">Stores</option>
                     <option value="table_employees">Employees</option>
                     <option value="table_products">Products</option>
                 </optgroup>
+
                 <optgroup label="Relationships">
                     <option value="relationship_inventory">Inventory</option>
                     <option value="relationship_employment">Employment</option>
                 </optgroup>
+
                 <optgroup label="Common queries">
                     <option value="query_store_inventory">Inventory at store</option>
                 </optgroup>
