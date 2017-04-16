@@ -142,6 +142,14 @@ def color_gen():
 # Some of the functions require results from a previous function (i.e. reference
 # to another relation)
 
+role_pay_gens = {
+    'Cashier': (decimal_gen(10, 15, 2), True),
+    'Manager': (decimal_gen(20, 25, 2), True),
+    'Stocker': (decimal_gen(15, 20, 2), True),
+    'Human Resources': (decimal_gen(30000, 50000, 2), False),
+    'Information Technology': (decimal_gen(50000, 70000, 2), False)
+}
+
 def make_roles(n):
     fields = ('roleid', 'role')
     roles = ['Cashier', 'Manager', 'Stocker', 'Human Resources', 'Information Technology']
@@ -153,16 +161,14 @@ def make_employees(n, roles):
 
     fnames = fname_gen()
     lnames = lname_gen()
-    wages = decimal_gen(10, 25, 2)
     salaries = decimal_gen(40000, 100000, 2)
-    bools = bool_gen()
 
     employees = []
     for id in range(1, n+1):
-        fname, lname, hourly = map(next, (fnames, lnames, bools))
-        pay = next(wages) if hourly else next(salaries)
-        roleid = random.choice(roles)[0]
-        employees.append((id, fname, lname, roleid, pay, hourly))
+        fname, lname = map(next, (fnames, lnames))
+        roleid, role = random.choice(roles)
+        pay_gen, hourly = role_pay_gens[role]
+        employees.append((id, fname, lname, roleid, next(pay_gen), hourly))
 
     return (fields, employees)
 

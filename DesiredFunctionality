@@ -42,9 +42,12 @@ features that we should probably implement:
             - Alter sale info
             - Alter employement
 
-- Make sure datagenerator.py produces correct output
-  - Cities should be matched with right states
-  ✓ Employee pay should reflect their role
-
 
 [ Tossed Ideas ]
+
+
+[ Completed ]
+
+- Make sure datagenerator.py produces correct output
+  - Cities should be matched with right states
+  - Employee pay should reflect their role
