@@ -14,13 +14,16 @@ import datagenerator
 app = Flask(__name__)
 
 def getdb():
+    '''Sets up the database connection as configured in config.py'''
     if not hasattr(g, 'db'):
         g.db = psycopg2.connect(host=config.db_host, port=config.db_port,
                                 dbname=config.db_name, password=config.db_password)
     return g.db
 
+
 @app.cli.command('initdb')
 def initdb():
+    '''Initializes database with randomly generated data'''
     with getdb() as conn:
         with conn.cursor() as cur:
             with open('schema.sql') as f:
@@ -30,32 +33,42 @@ def initdb():
 
     print('Database initialized')
 
+
 @app.teardown_appcontext
 def closedb(error):
+    '''Closes database'''
     if hasattr(g, 'db'):
         g.db.close()
 
+
 def run_query(query_type, args):
+    '''Runs the given query on the database'''
     args = {k:(v if v else None) for k,v in args.items()}
     conn = getdb()
     cur = conn.cursor()
     cur.execute(query.queries[query_type], args)
     return ([col[0] for col in cur.description], (row for row in cur))
 
+
 @app.route('/')
 def index_page():
+    '''Shows the root index page'''
     response = app.send_static_file('index.html')
     response.headers['content'] = 'text/html; charset=utf-8'
     return response
 
+
 @app.route('/info/', methods=('GET',))
 def get_info_page():
+    '''Shows the /info page'''
     response = make_response(render_template('info.html'))
     response.headers['content'] = 'text/html; charset=utf-8'
     return response
 
+
 @app.route('/info/', methods=('POST',))
 def post_info_page():
+    '''POSTs to info page'''
     query_type = request.form.get('query_type')
     if query_type is None:
         rendered = render_template('info.html', error='Must select a query type')
@@ -70,21 +83,29 @@ def post_info_page():
     response.headers['content'] = 'text/html; charset=utf-8'
     return response
 
+
 @app.route('/admin/')
 def admin_page():
+    '''Shows the admin page'''
     return 'Page to modify database'
+
 
 @app.route('/login/')
 def login_page():
+    '''Login page'''
     return 'Login functionality not implemented yet'
 
+
 def main(debug=False, port=8080):
+    '''Starts the flask webapp'''
     if debug:
         app.run('127.0.0.1', port, debug=True)
     else:
         app.run('0.0.0.0', port, debug=False)
 
+
 if __name__ == '__main__':
+    '''Runs the server with explicit runtime arguments'''
     USAGE = '%s [debug] [<port>]' % sys.argv[0]
 
     debug = 'debug' in sys.argv
