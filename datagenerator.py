@@ -193,8 +193,8 @@ def make_stores(n):
     '''
 
     fields = ('sid', 'address', 'city', 'state', 'zip', 'telno')
-    values = list(zip(range(1, n+1), zip_gen(), address_gen(), city_gen(),
-                      state_gen(), telno_gen()))
+    values = list(zip(range(1, n+1), address_gen(), city_gen(), state_gen(),
+                      zip_gen(), telno_gen()))
 
     return (fields, values)
 

@@ -42,7 +42,7 @@ queries = {
     ''',
 
     'relationship_employment': '''
-        select Stores.sid as store_id, telno, telno, city, zip,
+        select Stores.sid as store_id, telno, city, zip,
                Employees.eid as employee_id, firstname, lastname, role, pay, hourly
         from Employees
         join Roles on Employees.roleid = Roles.roleid
