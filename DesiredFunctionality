@@ -7,7 +7,7 @@ features that we should probably implement:
 - Login Page
 
 
-[ Wishlist ] 
+[ Wishlist ]
 
 - Registration of new users (passwords stored as bcrypt-sha256 hashes)
 - Password change
@@ -32,15 +32,19 @@ features that we should probably implement:
         Store locater
         Items search
         Deals? (shows items on special at given store)
-    
+
     Customer login:
         Cart (keep track of pid,sid,price, total)
-        
+
     Manager/Store official:
         Manager Portal
             - Alter store info
             - Alter sale info
             - Alter employement
-        
 
-[ Tossed Ideas ] 
+- Make sure datagenerator.py produces correct output
+  - Cities should be matched with right states
+  - Employee pay should reflect their role
+
+
+[ Tossed Ideas ]
