@@ -107,16 +107,13 @@ def address_gen():
 # Generate random city
 def city_gen():
     # A list of cities
-    cities = ['Jacksonville','Tampa','New York City','Chicago','China',
-              'Atlanta','San Diego', 'San Francisco', 'Carlsbad']
+    cities = [('Jacksonville', 'Florida'), ('Tampa', 'Florida'),
+              ('New York City', 'New York'), ('Chicago', 'Illinois'),
+              ('China', 'Illinois'), ('Atlanta', 'Georgia'),
+              ('San Diego', 'California'), ('San Francisco', 'California'),
+              ('Carlsbad', 'California')]
     return random_choice_gen(cities)
 
-
-# Generate random state
-def state_gen():
-    # A list of States
-    states = ['Florida','New York','Georgie','Illinois','California']
-    return random_choice_gen(states)
 
 def zip_gen():
     while True:
@@ -193,8 +190,10 @@ def make_stores(n):
     '''
 
     fields = ('sid', 'address', 'city', 'state', 'zip', 'telno')
-    values = list(zip(range(1, n+1), address_gen(), city_gen(), state_gen(),
-                      zip_gen(), telno_gen()))
+    values = []
+    for sid, addr, city_state, zipcode, telno in zip(range(1, n+1), address_gen(), city_gen(),
+                                                     zip_gen(), telno_gen()):
+        values.append((sid, addr, city_state[0], city_state[1], zipcode, telno))
 
     return (fields, values)
 

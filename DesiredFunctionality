@@ -44,7 +44,7 @@ features that we should probably implement:
 
 - Make sure datagenerator.py produces correct output
   - Cities should be matched with right states
-  - Employee pay should reflect their role
+  ✓ Employee pay should reflect their role
 
 
 [ Tossed Ideas ]
