@@ -74,7 +74,7 @@ def pass_gen():
                   'SodiumB1c4rb0n4t3','Def4ult5']
     for password in random_choice_gen(passwords):
         #yield bcrypt_sha256.hash(password)
-        yield password
+        yield bcrypt_sha256.hash(password)
 
 
 # Generate random telephone number
