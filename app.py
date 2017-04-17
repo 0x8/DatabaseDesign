@@ -1,57 +1,54 @@
 #!/usr/bin/env python3
 
+'''
+Kevin Orr
+Ian Guibas
+
+Flask app for interacting with database over the web
+
+References and sources:
+    https://www.youtube.com/watch?v=gDSLrpxR3G4&index=1&list=PLei96ZX_m9sWQco3fwtSMqyGL-JDQo28l
+
+    https://github.com/chawk/flask_movie/tree/master
+
+'''
+
 import sys
 import os, os.path
 import psycopg2
 import shutil
 from decimal import Decimal
 
-from flask import Flask, make_response, render_template, request, g
+# Main flask and database features
+from flask import Flask, request, g
+from flask import make_response, render_template, redirect, url_for
 
+import click
+
+# User defined features
 import query
 import datagenerator
 
-class ConfigError(RuntimeError):
-    pass
-
-try:
-    import config
-except ImportError:
-    raise ConfigError('Must supply a config.py. See README.md')
-
-for var in 'db_host', 'db_port', 'db_name', 'db_password':
-    if not hasattr(config, var):
-        raise ConfigError('Make sure config.py defines {}. See README.md'.format(var))
-
+# Set up Flask and database connection
 app = Flask(__name__)
+app.config.from_object('appconfig.Config')
+app.config.from_object('customconfig.Config')
 
 def getdb():
-    '''Sets up the database connection as configured in config.py'''
-    if not hasattr(g, 'db'):
-        g.db = psycopg2.connect(host=config.db_host, port=config.db_port,
-                                dbname=config.db_name, password=config.db_password)
-    return g.db
-
+    '''Sets up a psycopg2 database connection as configured in config.py'''
+    return psycopg2.connect(**app.config['PSYCOPG2_LOGIN_INFO'])
 
 @app.cli.command('initdb')
-def initdb():
-    '''Initializes database with randomly generated data'''
-    with getdb() as conn:
+@click.argument('number', default=20)
+def initdb(number):
+    '''Initialize the database with the randomly generated data'''
+    with getdb() as conn:  # Open db connection to execute
         with conn.cursor() as cur:
             with open('schema.sql') as f:
                 cur.execute(f.read())
 
-        datagenerator.write_tables_db(100, conn)
-
+        datagenerator.write_tables_db(number, conn, verbosity=1)
     print('Database initialized')
-
-
-@app.teardown_appcontext
-def closedb(error):
-    '''Closes database'''
-    if hasattr(g, 'db'):
-        g.db.close()
-
 
 def run_query(query_type, args):
     '''Runs the given query on the database'''
@@ -65,8 +62,6 @@ def run_query(query_type, args):
                 if isinstance(value, Decimal):
                     row[i] = '{:.2f}'.format(value)
         return ([col[0] for col in cur.description], rows)
-
-
 
 @app.route('/')
 def index_page():

@@ -4,6 +4,7 @@ data/
 
 # Private configuration stuffs
 config.py
+customconfig.py
 
 # Python stuff
 venv

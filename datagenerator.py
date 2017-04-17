@@ -14,6 +14,7 @@ purposes.
 import decimal
 import random
 import os, os.path
+import sys
 import csv
 import itertools
 from collections import OrderedDict
@@ -73,8 +74,7 @@ def pass_gen():
     passwords = [ 'Hunter2','__Hunter2','Password','P@$$W0rd','Adm1n',
                   'SodiumB1c4rb0n4t3','Def4ult5']
     for password in random_choice_gen(passwords):
-        #yield bcrypt_sha256.hash(password)
-        yield password
+        yield bcrypt_sha256.hash(password)
 
 
 # Generate random telephone number
@@ -150,13 +150,17 @@ role_pay_gens = {
     'Information Technology': (decimal_gen(50000, 70000, 2), False)
 }
 
-def make_roles(n):
+def make_roles(n, verbosity=False):
     fields = ('roleid', 'role')
     roles = ['Cashier', 'Manager', 'Stocker', 'Human Resources', 'Information Technology']
     values = list(zip(range(1, n+1), roles))
+
+    if verbosity:
+        print('{0}/{0} roles'.format(len(values)))
+
     return (fields, values)
 
-def make_employees(n, roles):
+def make_employees(n, roles, verbosity=False):
     fields = ('eid', 'firstname', 'lastname', 'roleid', 'pay', 'hourly')
 
     fnames = fname_gen()
@@ -164,25 +168,37 @@ def make_employees(n, roles):
     salaries = decimal_gen(40000, 100000, 2)
 
     employees = []
-    for id in range(1, n+1):
+    for eid in range(1, n+1):
+        if verbosity:
+            sys.stdout.write('\r{}/{} employees'.format(eid, n))
+
         fname, lname = map(next, (fnames, lnames))
         roleid, role = random.choice(roles)
         pay_gen, hourly = role_pay_gens[role]
-        employees.append((id, fname, lname, roleid, next(pay_gen), hourly))
+        employees.append((eid, fname, lname, roleid, next(pay_gen), hourly))
+
+    if verbosity:
+        print()
 
     return (fields, employees)
 
-def make_employment(n, employees, stores):
+def make_employment(n, employees, stores, verbosity=False):
     fields = ('sid', 'eid')
     employment_list = []
-    for _ in range(n):
+    for i in range(n):
+        if verbosity:
+            sys.stdout.write('\r{}/{} employments'.format(i+1, n))
+
         sid = random.choice(stores)[0]
         eid = random.choice(employees)[0]
         employment_list.append((sid, eid))
 
+    if verbosity:
+        print()
+
     return (fields, employment_list)
 
-def make_stores(n):
+def make_stores(n, verbosity=False):
     '''make_stores(n) -> list of store dicts
 
     The keys are:
@@ -199,11 +215,17 @@ def make_stores(n):
     values = []
     for sid, addr, city_state, zipcode, telno in zip(range(1, n+1), address_gen(), city_gen(),
                                                      zip_gen(), telno_gen()):
+        if verbosity:
+            sys.stdout.write('\r{}/{} stores'.format(sid, n))
+
         values.append((sid, addr, city_state[0], city_state[1], zipcode, telno))
+
+    if verbosity:
+        print()
 
     return (fields, values)
 
-def make_products(n):
+def make_products(n, verbosity=False):
     '''make_product(n) -> list of product dicts
 
     The keys are:
@@ -215,11 +237,24 @@ def make_products(n):
     '''
 
     fields = ('pid', 'name', 'color')
-    values = list(zip(range(1, n+1), pname_gen(), color_gen()))
+    pnames = pname_gen()
+    colors = color_gen()
+
+    values = []
+    for sid in range(1, n+1):
+        pname = next(pnames)
+        color = next(colors)
+        values.append((sid, pname, color))
+
+        if verbosity:
+            sys.stdout.write('\r{}/{} stores'.format(sid, n))
+
+    if verbosity:
+        print()
 
     return (fields, values)
 
-def make_inventory(n, stores, products):
+def make_inventory(n, stores, products, verbosity=False):
     '''make_inventory(n) -> list of inventory dicts
 
     These dicts contain the inventory information for any given store. It does
@@ -237,7 +272,7 @@ def make_inventory(n, stores, products):
     price_gen = decimal_gen(10, 100, 2)
     special_gen = bool_gen()
     inventory = []
-    for _ in range(n):
+    for i in range(n):
         sid = random.choice(stores)[0]
         pid = random.choice(products)[0]
         price = next(price_gen)
@@ -245,9 +280,15 @@ def make_inventory(n, stores, products):
         special = next(special_gen)
         inventory.append((sid, pid, price, stock, special))
 
+        if verbosity:
+            sys.stdout.write('\r{}/{} inventory'.format(i+1, n))
+
+    if verbosity:
+        print()
+
     return (fields, inventory)
 
-def make_transactions(n, stores, products):
+def make_transactions(n, stores, products, verbosity=False):
     '''make_transactions(n, stores, products) -> list of transaction dicts
 
     This holds records of transactions per store. A good idea for maintaining
@@ -270,9 +311,15 @@ def make_transactions(n, stores, products):
         amount = random.randint(1, 10)
         transactions.append((txid, sid, pid, price, amount))
 
+        if verbosity:
+            sys.stdout.write('\r{}/{} transactions'.format(txid, n))
+
+    if verbosity:
+        print()
+
     return (fields, transactions)
 
-def make_suppliers(n):
+def make_suppliers(n, verbosity=False):
     '''make_suppliers(n) -> list of supplier dicts
 
     The keys are:
@@ -280,12 +327,17 @@ def make_suppliers(n):
     supid = supplier id. A numeric representation of who this supplier is
     name = name of the supplier
     '''
+
     fields = ('supid', 'name')
     names = ['We Sell Everything', 'Ants in My Eyes Johnson Electronics', 'Tools \'R\' Us']
     values = list(zip(range(1, n+1), names))
+
+    if verbosity:
+        print ('{0}/{0} suppliers'.format(n))
+
     return (fields, values)
 
-# def make_supplies(n, products, suppliers):
+# def make_supplies(n, products, suppliers, verbosity=False):
 #     fields = ('supid', 'pid', 'cost', 'qty')
 #     supplies = []
 #     price_gen = decimal_gen(1000, 100000, 2)
@@ -298,7 +350,7 @@ def make_suppliers(n):
 #
 #     return (fields, supplies)
 
-def make_orders(n, products, stores, suppliers):
+def make_orders(n, products, stores, suppliers, verbosity=False):
     fields = ('oid', 'sid', 'pid', 'number', 'cost')
     orders = []
     price_gen = decimal_gen(1000, 100000, 2)
@@ -309,72 +361,97 @@ def make_orders(n, products, stores, suppliers):
         cost = next(price_gen)
         orders.append((oid, sid, pid, number, cost))
 
+        if verbosity:
+            sys.stdout.write('\r{}/{} orders'.format(oid, n))
+
+    if verbosity:
+        print()
+
     return (fields, orders)
 
-def make_users(n):
+def make_users(n, verbosity=False):
     fields = ('uid', 'username', 'password', 'admin')
-    values = list(zip(range(1, n+1), uname_gen(), pass_gen(), bool_gen()))
+    unames = uname_gen()
+    passwords = pass_gen()
+    is_admins = bool_gen()
+
+    values = []
+    for uid in range(1, n+1):
+        uname = next(unames)
+        password = next(passwords)
+        is_admin = next(is_admins)
+        values.append((uid, uname, password, is_admin))
+
+        if verbosity:
+            sys.stdout.write('\r{}/{} users'.format(uid, n))
+
     return (fields, values)
 
 
 # Generate the actual CSV files
-def create_tables(n):
+def create_tables(n, verbosity=0):
     tables = OrderedDict()
 
     #print('Creating roles')
-    tables['roles'] = roles = make_roles(n)
+    tables['roles'] = roles = make_roles(n, verbosity=verbosity)
 
     #print('Creating employees')
-    tables['employees'] = employees = make_employees(n, roles[1])
+    tables['employees'] = employees = make_employees(n, roles[1], verbosity=verbosity)
 
     #print('Creating stores')
-    tables['stores'] = stores = make_stores(n)
+    tables['stores'] = stores = make_stores(n, verbosity=verbosity)
 
     #print('Creating employment')
-    tables['employment'] = employment = make_employment(n, employees[1], stores[1])
+    tables['employment'] = employment = make_employment(n, employees[1], stores[1], verbosity=verbosity)
 
     #print('Creating products')
-    tables['products'] = products = make_products(n)
+    tables['products'] = products = make_products(n, verbosity=verbosity)
 
     #print('Creating inventory')
-    tables['inventory'] = inventory = make_inventory(n, stores[1], products[1])
+    tables['inventory'] = inventory = make_inventory(n, stores[1], products[1], verbosity=verbosity)
 
     #print('Creating transactions')
-    tables['transactions'] = transactions = make_transactions(n, stores[1], products[1])
+    tables['transactions'] = transactions = make_transactions(n, stores[1], products[1], verbosity=verbosity)
 
     #print('Creating suppliers')
-    tables['suppliers'] = suppliers = make_suppliers(n)
+    tables['suppliers'] = suppliers = make_suppliers(n, verbosity=verbosity)
 
     #print('Creating orders')
-    tables['orders'] = orders = make_orders(n, products[1], stores[1], suppliers[1])
+    tables['orders'] = orders = make_orders(n, products[1], stores[1], suppliers[1], verbosity=verbosity)
 
     #print('Creating users')
-    tables['users'] = users = make_users(n)
+    tables['users'] = users = make_users(n, verbosity=verbosity)
 
     return tables
 
-def write_tables_csv(n):
-    tables = create_tables()
+def write_tables_csv(n, verbosity=0):
+    tables = create_tables(n, verbosity)
 
     for tablename, table in tables.items():
         path = os.path.join(THIS_FILE_PATH, 'data', tablename + '.csv')
         with open(path, 'w') as f:
-            #print('Writing {} rows to {}'.format(len(table[1]), path))
+            if verbosity:
+                print('Writing {} rows to {}'.format(len(table[1]), path))
+
             writer = csv.writer(f)
             writer.writerow(table[0])
             writer.writerows(table[1])
 
-def write_tables_db(n, conn):
-    tables = create_tables(n)
+def write_tables_db(n, conn, verbosity=0):
+    tables = create_tables(n, verbosity)
 
-    with conn.cursor() as c:
+    with conn.cursor() as cur:
         for tablename, table in tables.items():
             fieldspec = '(' + ','.join(table[0]) + ')'
             query = 'insert into {} {} values %s'.format(tablename, fieldspec)
-            print(query)
+            if verbosity:
+                print(query)
+
             for row in table[1]:
-                print(row)
-                c.execute(query, (row,))
+                if verbosity > 1:
+                    print(row)
+
+                cur.execute(query, (row,))
 
 
 # =============== [ Main ] ============== #
