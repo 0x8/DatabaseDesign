@@ -13,7 +13,7 @@ with open('.secret_key','a+b') as f:
         key = os.urandom(64)
 
 
-class Config(object):
+class Config():
 
     # SQLAlchemy Database connection and whether to track changes
     # More Information:
@@ -22,6 +22,13 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = 'postgresql://dbadmin:Sup3r1337@localhost/silkroad'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    PSYCOPG2_LOGIN_INFO = {
+        'host': 'localhost',
+        'port': 5432,
+        'dbname': 'silkroad',
+        'password': 'password'
+    }
+
     # Flask-Security and Session Information:
     SESSION_COOKIE_HTTPONLY = True
     SECRET_KEY = key
@@ -29,7 +36,7 @@ class Config(object):
 
     FLASK_DEBUG=1
 
-class Debugging(object):
+class Debugging():
 
     # SQLAlchemy Database connection and whether to track changes
     SQLALCHEMY_DATABASE_URI = 'postgresql://dbadmin:Sup3r1337@localhost/silkroad'
