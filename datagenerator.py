@@ -318,7 +318,7 @@ def make_users(n):
 
 
 # Generate the actual CSV files
-def create_tables(n):
+def create_tables(n, verbosity=0):
     tables = OrderedDict()
 
     #print('Creating roles')
@@ -353,8 +353,8 @@ def create_tables(n):
 
     return tables
 
-def write_tables_csv(n):
-    tables = create_tables()
+def write_tables_csv(n, verbosity=0):
+    tables = create_tables(n, verbosity)
 
     for tablename, table in tables.items():
         path = os.path.join(THIS_FILE_PATH, 'data', tablename + '.csv')
@@ -364,17 +364,21 @@ def write_tables_csv(n):
             writer.writerow(table[0])
             writer.writerows(table[1])
 
-def write_tables_db(n, conn):
-    tables = create_tables(n)
+def write_tables_db(n, conn, verbosity=0):
+    tables = create_tables(n, verbosity)
 
-    with conn.cursor() as c:
+    with conn.cursor() as cur:
         for tablename, table in tables.items():
             fieldspec = '(' + ','.join(table[0]) + ')'
             query = 'insert into {} {} values %s'.format(tablename, fieldspec)
-            print(query)
+            if verbosity:
+                print(query)
+
             for row in table[1]:
-                print(row)
-                c.execute(query, (row,))
+                if verbosity > 1:
+                    print(row)
+
+                cur.execute(query, (row,))
 
 
 # =============== [ Main ] ============== #
