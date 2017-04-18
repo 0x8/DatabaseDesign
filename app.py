@@ -66,7 +66,7 @@ class User(db.Model, UserMixin):
 
 
 # Creating a user to test authentication with
-@app.before_first_request
+# @app.before_first_request
 def create_user():
     db.create_all()
     user_datastore.create_user(
