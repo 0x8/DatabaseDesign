@@ -3,7 +3,7 @@
 data/
 
 # Private configuration stuffs
-config.py
+.secret*
 
 # Python stuff
 venv
