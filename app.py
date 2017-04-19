@@ -14,7 +14,11 @@ References and sources:
 # Flask
 from flask import Flask
 from flask import request, redirect, url_for, render_template
-from flask import session, escape
+from flask import session, escape, g
+
+# Forms
+from wtforms import Form, BooleanField, StringField, PasswordField, validators
+from wtforms.validators import Required
 
 # Set up config before import extensions
 app = Flask(__name__)
@@ -34,6 +38,8 @@ toolbar = DebugToolbarExtension(app)
 from flask_security import Security, SQLAlchemyUserDatastore
 from flask_security import UserMixin, RoleMixin
 from flask_security import login_required
+from flask_security.forms import RegisterForm,LoginForm
+
 
 from passlib.hash import bcrypt_sha256
 import click
@@ -42,6 +48,10 @@ import click
 import datagenerator
 
 
+
+####################
+## DATABASE STUFF ##
+####################
 def get_db():
     '''Sets up a psycopg2 database connection as configured in config.py'''
     return psycopg2.connect(**app.config['PSYCOPG2_LOGIN_INFO'])
@@ -59,14 +69,11 @@ def run_query(query_type, args):
                     row[i] = '{:.2f}'.format(value)
         return ([col[0] for col in cur.description], rows)
 
-
 # Define role relation
 # NOTE "user" is a reserved keyword in at least postgres
 roles_users = db.Table('sqlalch_roles_users',
     db.Column('user_id', db.Integer(), db.ForeignKey('sqlalch_user.id')),
     db.Column('role_id', db.Integer(), db.ForeignKey('sqlalch_role.id')))
-
-
 
 # Setting up the user role table for managing permissions
 class SQLAlchRole(db.Model, RoleMixin):
@@ -89,20 +96,48 @@ class User(db.Model, UserMixin):
     roles = db.relationship(SQLAlchRole, secondary=roles_users,
             backref=db.backref('users', lazy='dynamic'))
 
+    def hash_password(self, password):
+        self.password = bcrypt_sha256.hash(password)
+
+    def verify_password(self, password):
+        return bcrypt_sha256.verify(password, self.password)
+
+##########################
+## Flask Security Forms ##
+##########################
+
+# Add username form field to login
+class extendedLoginForm(LoginForm):
+    username = StringField('Username', validators=[Required()])
+
+# Add username form field to registration
+class extendedRegisterForm(RegisterForm):
+    username = StringField('Username', validators=[Required()])
 
 # Set up Flask-Security
 user_datastore = SQLAlchemyUserDatastore(db, User, SQLAlchRole)
-security = Security(app, user_datastore)
+security = Security(app, user_datastore, login_form=extendedLoginForm, register_form=extendedRegisterForm)
+
+
+# Adding login via username through flask_security
+@security.login_context_processor
+def security_register_processor():
+    return dict(username="email")
+
+@security.register_context_processor
+def security_register_processor():
+    return dict(username="email")
+
 
 # Creating a user to test authentication with
-# @app.before_first_request
+#@app.before_first_request
 def create_user():
     db.create_all()
 
     admin = user_datastore.create_user(
         username='nullp0inter',
         email='iguibas@mail.usf.edu',
-        password='_Hunter2',
+        password=bcrypt_sha256.hash('_Hunter2'),
         active=True
     )
 
@@ -115,6 +150,7 @@ def create_user():
     db.session.commit()
 
 
+
 @app.cli.command('initdb')
 @click.argument('number', default=20)
 def initdb(number):
@@ -125,6 +161,7 @@ def initdb(number):
                 cur.execute(f.read())
 
         datagenerator.write_tables_db(number, conn, verbosity=1)
+
 
 
 @app.route('/profile/<username>')
@@ -142,10 +179,13 @@ def dbusertest():
         print('got username:', row['username'])
     conn.close()
 
+
+
 @app.route('/')
 @login_required
 def index():
     return render_template('index.html')
+
 
 
 @app.route('/login', methods=['POST','GET'])
@@ -155,21 +195,33 @@ def login():
     passsword = bcrypt_sha256.hash(request.form['password'])
     return redirect(url_for('index'))
 
-@app.route('/register', methods=['POST','GET'])
-def register():
-    '''Register as a new user'''
-    user = request.form['new_user']
-    email = request.form['email']
-    password = bcrypt_sha256.hash(request.form['new_pass'])
 
-    user_datastore.create_user(
-        username=user,
-        email=email,
-        password=password,
-        active=True
-    )
 
-    return redirect(url_for('index'))
+
+
+
+
+
+
+# @app.route('/register', methods=['POST','GET'])
+# def register():
+#     '''Register as a new user'''
+#     user = request.form['new_user']
+#     email = request.form['email']
+#     password = bcrypt_sha256.hash(request.form['new_pass'])
+
+#     user_datastore.create_user(
+#         username=user,
+#         email=email,
+#         password=password,
+#         active=True
+#     )
+
+#     return redirect(url_for('index'))
+
+
+
+# Adding username form to physical appearance
 
 if __name__ == '__main__':
     app.run()
