@@ -37,17 +37,21 @@
     <!-- Navigation -->
     <nav id="mainNav" class="navbar navbar-default navbar-fixed-top navbar-custom">
         <div class="container">
+            
             <!-- Brand and toggle get grouped for better mobile display -->
             <div class="navbar-header page-scroll">
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
                     <span class="sr-only">Toggle navigation</span> Menu <i class="fa fa-bars"></i>
                 </button>
-                <a class="navbar-brand" href="#page-top">Silkroad Management Center</a>
+                <a class="navbar-brand" href="/">Silkroad Management Center</a>
             </div>
 
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav navbar-right">
+                    
+                    <!-- Only show logout button if someone is logged in -->
+                    {% if current_user.is_authenticated %}
                     <!-- I'm updating these to reflect our own stuff, right now they will be dead links -->
                     <li class="hidden">
                         <a href="#page-top"></a>
@@ -58,12 +62,14 @@
                     <li class="page-scroll">
                         <a href="/employees">Employees</a>
                     </li>
+
+                    <!-- Only show if the user has admin role d-->
+                    {% if current_user.has_role('admin') %}
                     <li class="page-scroll">
                         <a href="/users">Users</a>
                     </li>
-                    
-                    <!-- Only show logout button if someone is logged in -->
-                    {% if current_user.is_authenticated %}
+                    {% endif %}
+
                     <li class="page-scroll"> <!-- Thats actually a lie, sorry -->
                         <a href="/logout">Logout</a>
                     </li>
@@ -109,8 +115,7 @@
                         </ul> -->
                     </div>
                     <div class="footer-col col-md-4">
-                        <h3>About Freelancer</h3>
-                        <p>Freelance is a free to use, open source Bootstrap theme created by <a href="http://startbootstrap.com">Start Bootstrap</a>.</p>
+                        <h3><a href="/acknowledgements">Acknowledgements</a><h3>
                     </div>
                 </div>
             </div>
