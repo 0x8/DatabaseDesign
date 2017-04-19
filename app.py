@@ -39,7 +39,9 @@ from flask_security import Security, SQLAlchemyUserDatastore
 from flask_security import UserMixin, RoleMixin
 from flask_security import login_required
 from flask_security.forms import RegisterForm,LoginForm
-
+from flask_security.utils import verify_and_update_password, get_message
+from flask_security.utils import validate_redirect_url
+from flask_security.confirmable import requires_confirmation
 
 from passlib.hash import bcrypt_sha256
 import click
@@ -102,6 +104,9 @@ class User(db.Model, UserMixin):
     def verify_password(self, password):
         return bcrypt_sha256.verify(password, self.password)
 
+
+
+
 ##########################
 ## Flask Security Forms ##
 ##########################
@@ -109,6 +114,54 @@ class User(db.Model, UserMixin):
 # Add username form field to login
 class extendedLoginForm(LoginForm):
     username = StringField('Username', validators=[Required()])
+
+    # I actually need to overload their validate method
+    def validate(self):
+        if not super(LoginForm, self).validate():
+            return False
+
+        # Verify username field is not blank. We don't concern ourselves with email
+        # because we don't use that to validate
+        if self.username.data.strip() == '':
+            self.username.errors.append(get_message('USERNAME NOT PROVIDED'))
+            return False
+
+        # If the password field is left blank, fail.
+        if self.password.data.strip() == '':
+            self.password.errors.append(get_message('PASSWORD NOT PROVIDED'))
+            return False
+
+        # set the user to be the user name in the field and look it up
+        # in the database
+        self.user = security.datastore.get_user(self.username.data)
+
+        # Ensure the user exists in the database
+        if self.user is None:
+            self.username.errors.append(get_message('INCORRECT USERNAME/PASSWORD'))
+            return False
+
+        # Ensure the password was set
+        if not self.user.password:
+            self.password.errors.append(get_message('PASSWORD WAS NOT SET'))
+            return False
+
+        # Verify the password provided matches what is in the database for that user
+        if not verify_and_update_password(self.password.data, self.user):
+            self.password.errors.append(get_message('INCORRECT USERNAME/PASSWORD'))
+            return False
+
+        # If user confirmation is enabled and the user has not confirmed, deny access
+        if requires_confirmation(self.user):
+            self.user.errors.append(get_message('CONFIRMATION REQUIRED'))
+            return False
+
+        # Make sure that the user account is active and not disabled
+        if not self.user.is_active:
+            self.username.errors.append(get_message('DISABLED ACCOUNT'))
+            return False
+
+        # If all other checks are passed, the user is valid
+        return True
 
 # Add username form field to registration
 class extendedRegisterForm(RegisterForm):
@@ -162,15 +215,6 @@ def initdb(number):
 
         datagenerator.write_tables_db(number, conn, verbosity=1)
 
-
-
-@app.route('/profile/<username>')
-def profile(username):
-    user = User.query.filter_by(username=username).first()
-    return render_template('profile.html', user=user)
-
-
-
 @app.cli.command('dbusertest')
 def dbusertest():
     conn = db.engine.connect()
@@ -181,11 +225,21 @@ def dbusertest():
 
 
 
+
+#########################
+## Routing Definitions ##
+#########################
+
+@app.route('/profile/<username>')
+def profile(username):
+    user = User.query.filter_by(username=username).first()
+    return render_template('profile.html', user=user)
+
+
 @app.route('/')
 @login_required
 def index():
     return render_template('index.html')
-
 
 
 @app.route('/login', methods=['POST','GET'])
@@ -196,11 +250,19 @@ def login():
     return redirect(url_for('index'))
 
 
+@app.route('/users')
+def users_page():
+    return "<H1>Under Construction</H1>"
 
 
+@app.route('/stores')
+def stores_page():
+    return "<H1>Under Construction</H1>"
 
 
-
+@app.route('/employees')
+def employees_page():
+    return "<H1>Under Construction</H1>"
 
 
 # @app.route('/register', methods=['POST','GET'])
@@ -219,9 +281,6 @@ def login():
 
 #     return redirect(url_for('index'))
 
-
-
-# Adding username form to physical appearance
 
 if __name__ == '__main__':
     app.run()
