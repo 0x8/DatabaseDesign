@@ -251,19 +251,26 @@ def login():
 
 
 @app.route('/users')
+@login_required
 def users_page():
-    return "<H1>Under Construction</H1>"
+    return render_template('users.html')
 
 
 @app.route('/stores')
+@login_required
 def stores_page():
-    return "<H1>Under Construction</H1>"
+    return render_template('stores.html')
 
 
 @app.route('/employees')
+@login_required
 def employees_page():
-    return "<H1>Under Construction</H1>"
+    return render_template('employees.html')
 
+
+@app.route('/acknowledgements', methods=['GET'])
+def acknowledgements():
+    return render_template('acknowledgements.html')
 
 # @app.route('/register', methods=['POST','GET'])
 # def register():
