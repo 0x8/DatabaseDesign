@@ -19,7 +19,7 @@ from flask import session, escape
 # Set up config before import extensions
 app = Flask(__name__)
 app.config.from_object('appconfig.Config')
-app.config.from_object('customconfig.Config')
+#app.config.from_object('customconfig.Config')
 
 # Database
 from flask_sqlalchemy import SQLAlchemy
