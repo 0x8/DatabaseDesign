@@ -13,42 +13,42 @@ References and sources:
 
 '''
 
-import sys
-import os, os.path
-import psycopg2
-import shutil
-from decimal import Decimal
+# Flask
+from flask import Flask
+from flask import request, redirect, url_for, render_template
+from flask import session, escape
 
-# Main flask and database features
-from flask import Flask, request, g
-from flask import make_response, render_template, redirect, url_for
-
-import click
-
-# User defined features
-import query
-import datagenerator
-
-# Set up Flask and database connection
+# Set up config before import extensions
 app = Flask(__name__)
 app.config.from_object('appconfig.Config')
 app.config.from_object('customconfig.Config')
 
-def getdb():
+# Database
+from flask_sqlalchemy import SQLAlchemy
+import psycopg2
+db = SQLAlchemy(app)
+
+# flask-debugtoolbar
+from flask_debugtoolbar import DebugToolbarExtension
+toolbar = DebugToolbarExtension(app)
+
+# flask-security
+from flask_security import Security, SQLAlchemyUserDatastore
+from flask_security import UserMixin, RoleMixin
+from flask_security import login_required
+
+from passlib.hash import bcrypt_sha256
+import click
+from decimal import Decimal
+
+# User defined features
+import datagenerator
+import query
+
+
+def get_db():
     '''Sets up a psycopg2 database connection as configured in config.py'''
     return psycopg2.connect(**app.config['PSYCOPG2_LOGIN_INFO'])
-
-@app.cli.command('initdb')
-@click.argument('number', default=20)
-def initdb(number):
-    '''Initialize the database with the randomly generated data'''
-    with getdb() as conn:  # Open db connection to execute
-        with conn.cursor() as cur:
-            with open('schema.sql') as f:
-                cur.execute(f.read())
-
-        datagenerator.write_tables_db(number, conn, verbosity=1)
-    print('Database initialized')
 
 def run_query(query_type, args):
     '''Runs the given query on the database'''
@@ -63,48 +63,118 @@ def run_query(query_type, args):
                     row[i] = '{:.2f}'.format(value)
         return ([col[0] for col in cur.description], rows)
 
+
+# Define role relation
+# NOTE "user" is a reserved keyword in at least postgres
+roles_users = db.Table('sqlalch_roles_users',
+    db.Column('user_id', db.Integer(), db.ForeignKey('sqlalch_user.id')),
+    db.Column('role_id', db.Integer(), db.ForeignKey('sqlalch_role.id')))
+
+
+
+# Setting up the user role table for managing permissions
+class SQLAlchRole(db.Model, RoleMixin):
+    __tablename__ = 'sqlalch_role'
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+    description = db.Column(db.String(255))
+
+
+
+# Setting up the User table for managing users with permissions
+class User(db.Model, UserMixin):
+    __tablename__ = 'sqlalch_user'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(40), unique=True)
+    password = db.Column(db.String(255))
+    email = db.Column(db.String(255))
+    active = db.Column(db.Boolean())
+    confirmed_at = db.Column(db.DateTime())
+    roles = db.relationship(SQLAlchRole, secondary=roles_users,
+            backref=db.backref('users', lazy='dynamic'))
+
+
+# Set up Flask-Security
+user_datastore = SQLAlchemyUserDatastore(db, User, SQLAlchRole)
+security = Security(app, user_datastore)
+
+# Creating a user to test authentication with
+# @app.before_first_request
+def create_user():
+    db.create_all()
+
+    admin = user_datastore.create_user(
+        username='nullp0inter',
+        email='iguibas@mail.usf.edu',
+        password='_Hunter2',
+        active=True
+    )
+
+    admin_role = user_datastore.create_role(
+        name='admin',
+        description='Administrator'
+    )
+
+    user_datastore.add_role_to_user(admin, admin_role)
+    db.session.commit()
+
+
+@app.cli.command('initdb')
+@click.argument('number', default=20)
+def initdb(number):
+    '''Initialize the database with the randomly generated data'''
+    with get_db() as conn:  # Open db connection to execute
+        with conn.cursor() as cur:
+            with open('schema.sql','r') as f:
+                cur.execute(f.read())
+
+        datagenerator.write_tables_db(number, conn, verbosity=1)
+    print('Database initialized')
+
+
+@app.route('/profile/<username>')
+def profile(username):
+    user = User.query.filter_by(username=username).first()
+    return render_template('profile.html', user=user)
+
+
+
+@app.cli.command('dbusertest')
+def dbusertest():
+    conn = db.engine.connect()
+    result = conn.execute('SELECT username from users;')
+    for row in result:
+        print('got username:', row['username'])
+    conn.close()
+
 @app.route('/')
-def index_page():
-    '''Shows the root index page'''
-    response = app.send_static_file('index.html')
-    response.headers['content'] = 'text/html; charset=utf-8'
-    return response
+@login_required
+def index():
+    return render_template('index.html')
 
 
-@app.route('/info/', methods=('GET',))
-def get_info_page():
-    '''Shows the /info page'''
-    response = make_response(render_template('info.html'))
-    response.headers['content'] = 'text/html; charset=utf-8'
-    return response
+@app.route('/login', methods=['POST','GET'])
+def login():
+    '''Log in as an existing user'''
+    email = request.form['email']
+    passsword = bcrypt_sha256.hash(request.form['password'])
+    return redirect(url_for('index'))
 
+@app.route('/register', methods=['POST','GET'])
+def register():
+    '''Register as a new user'''
+    user = request.form['new_user']
+    email = request.form['email']
+    password = bcrypt_sha256.hash(request.form['new_pass'])
 
-@app.route('/info/', methods=('POST',))
-def post_info_page():
-    '''POSTs to info page'''
-    query_type = request.form.get('query_type')
-    if query_type is None:
-        rendered = render_template('info.html', error='Must select a query type')
-    else:
-        try:
-            headers, row_iter = run_query(query_type, request.form)
-            rendered = render_template('info.html', query_type=query_type,
-                                       headers=headers, rows=row_iter)
-        except KeyError:
-            rendered = render_template('info.html', error='Query type %r not found' % query_type)
+    user_datastore.create_user(
+        username=user,
+        email=email,
+        password=password,
+        active=True
+    )
 
-    response = make_response(rendered)
-    response.headers['content'] = 'text/html; charset=utf-8'
-    return response
+    return redirect(url_for('index'))
 
-
-@app.route('/admin/')
-def admin_page():
-    '''Shows the admin page'''
-    return 'Page to modify database'
-
-
-@app.route('/login/')
-def login_page():
-    '''Login page'''
-    return 'Login functionality not implemented yet'
+if __name__ == '__main__':
+    app.run()
