@@ -14,6 +14,7 @@ with open('.secret_key','a+b') as f:
 
 
 class Config():
+    FLASK_DEBUG=1
 
     # SQLAlchemy Database connection and whether to track changes
     # More Information:
@@ -33,19 +34,17 @@ class Config():
     SESSION_COOKIE_HTTPONLY = True
     SECRET_KEY = key
     SECURITY_REGISTERABLE = True
+    SECURITY_CONFIRMABLE = False
     SECURITY_USER_IDENTITY_ATTRIBUTES = 'username'
     SECURITY_PASSWORD_HASH = 'bcrypt'
     SECURITY_PASSWORD_SALT = 'SuperSecretSalt'
 
-    FLASK_DEBUG=1
 
-class Debugging():
-
-    # SQLAlchemy Database connection and whether to track changes
-    SQLALCHEMY_DATABASE_URI = 'postgresql://dbadmin:Sup3r1337@localhost/silkroad'
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+class DebugConfig(Config):
 
     # Debugging options for flask
     DEBUG = True
     TESTING = True
     FLASK_DEBUG=1
+
+    TEMPLATES_AUTO_RELOAD = True
