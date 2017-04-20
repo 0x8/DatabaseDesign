@@ -200,7 +200,6 @@ def security_register_processor():
 ######################
 
 # Creating a user to test authentication with
-# @app.before_first_request
 @app.cli.command('make-admin')
 def create_admin():
     admin = user_datastore.create_user(
