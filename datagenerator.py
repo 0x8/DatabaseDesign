@@ -288,6 +288,7 @@ def make_inventory(n, stores, products, verbosity=False):
 
     return (fields, inventory)
 
+# Not used any more
 def make_transactions(n, stores, products, verbosity=False):
     '''make_transactions(n, stores, products) -> list of transaction dicts
 
@@ -350,6 +351,7 @@ def make_suppliers(n, verbosity=False):
 #
 #     return (fields, supplies)
 
+# Not used any more
 def make_orders(n, products, stores, suppliers, verbosity=False):
     fields = ('oid', 'sid', 'pid', 'number', 'cost')
     orders = []
@@ -410,14 +412,8 @@ def create_tables(n, verbosity=0):
     #print('Creating inventory')
     tables['inventory'] = inventory = make_inventory(n, stores[1], products[1], verbosity=verbosity)
 
-    #print('Creating transactions')
-    tables['transactions'] = transactions = make_transactions(n, stores[1], products[1], verbosity=verbosity)
-
     #print('Creating suppliers')
     tables['suppliers'] = suppliers = make_suppliers(n, verbosity=verbosity)
-
-    #print('Creating orders')
-    tables['orders'] = orders = make_orders(n, products[1], stores[1], suppliers[1], verbosity=verbosity)
 
     #print('Creating users')
     tables['users'] = users = make_users(n, verbosity=verbosity)

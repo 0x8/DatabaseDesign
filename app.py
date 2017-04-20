@@ -29,7 +29,7 @@ try:
     import customconfig
     app.config.from_object(customconfig.Config)
 except ImportError as e:
-    pass
+    print(e)
 
 # Database
 from flask_sqlalchemy import SQLAlchemy
@@ -58,26 +58,9 @@ import datagenerator
 import query
 
 
-
-####################
-## DATABASE STUFF ##
-####################
-def get_db():
-    '''Sets up a psycopg2 database connection as configured in config.py'''
-    return psycopg2.connect(**app.config['PSYCOPG2_LOGIN_INFO'])
-
-def run_query(query_type, args):
-    '''Runs the given query on the database'''
-    args = {k:(v if v else None) for k,v in args.items()}
-    with getdb() as conn:
-        cur = conn.cursor()
-        cur.execute(query.queries[query_type], args)
-        rows = [list(row) for row in cur.fetchall()]
-        for row in rows:
-            for i, value in enumerate(row):
-                if isinstance(value, Decimal):
-                    row[i] = '{:.2f}'.format(value)
-        return ([col[0] for col in cur.description], rows)
+#####################
+## DATABASE MODELS ##
+#####################
 
 # Define role relation
 # NOTE "user" is a reserved keyword in at least postgres
@@ -112,7 +95,29 @@ class User(db.Model, UserMixin):
     def verify_password(self, password):
         return bcrypt_sha256.verify(password, self.password)
 
+db.create_all()
 
+
+############
+# QUERYING #
+############
+
+def get_db():
+    '''Sets up a psycopg2 database connection as configured in config.py'''
+    return psycopg2.connect(**app.config['PSYCOPG2_LOGIN_INFO'])
+
+def run_query(query_type, args):
+    '''Runs the given query on the database'''
+    args = {k:(v if v else None) for k,v in args.items()}
+    with getdb() as conn:
+        cur = conn.cursor()
+        cur.execute(query.queries[query_type], args)
+        rows = [list(row) for row in cur.fetchall()]
+        for row in rows:
+            for i, value in enumerate(row):
+                if isinstance(value, Decimal):
+                    row[i] = '{:.2f}'.format(value)
+        return ([col[0] for col in cur.description], rows)
 
 
 ##########################
@@ -190,12 +195,14 @@ def security_register_processor():
     return dict(username="email")
 
 
+######################
+# CLICK CLI COMMANDS #
+######################
+
 # Creating a user to test authentication with
 # @app.before_first_request
 @app.cli.command('make-admin')
 def create_admin():
-    db.create_all()
-
     admin = user_datastore.create_user(
         username='nullp0inter',
         email='iguibas@mail.usf.edu',
@@ -232,8 +239,6 @@ def dbusertest():
     for row in result:
         print('got username:', row['username'])
     conn.close()
-
-
 
 
 #########################
