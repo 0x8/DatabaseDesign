@@ -104,7 +104,8 @@ security = Security(app, user_datastore)
 
 # Creating a user to test authentication with
 # @app.before_first_request
-def create_user():
+@app.cli.command('make-admin')
+def create_admin():
     db.create_all()
 
     admin = user_datastore.create_user(
