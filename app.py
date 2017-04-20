@@ -21,7 +21,11 @@ from flask import session, escape
 # Set up config before import extensions
 app = Flask(__name__)
 app.config.from_object('appconfig.Config')
-app.config.from_object('customconfig.Config')
+try:
+    import customconfig
+    app.config.from_object(customconfig.Config)
+except ImportError as e:
+    pass
 
 # Database
 from flask_sqlalchemy import SQLAlchemy
