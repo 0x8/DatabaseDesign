@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 '''
 Kevin Orr
 Ian Guibas
@@ -23,7 +25,11 @@ from wtforms.validators import Required
 # Set up config before import extensions
 app = Flask(__name__)
 app.config.from_object('appconfig.Config')
-#app.config.from_object('customconfig.Config')
+try:
+    import customconfig
+    app.config.from_object(customconfig.Config)
+except ImportError as e:
+    print(e)
 
 # Database
 from flask_sqlalchemy import SQLAlchemy
@@ -45,15 +51,57 @@ from flask_security.confirmable import requires_confirmation
 
 from passlib.hash import bcrypt_sha256
 import click
+from decimal import Decimal
 
 # User defined features
 import datagenerator
+import query
+
+
+#####################
+## DATABASE MODELS ##
+#####################
+
+# Define role relation
+# NOTE "user" is a reserved keyword in at least postgres
+roles_users = db.Table('flask_security_roles_users',
+    db.Column('user_id', db.Integer(), db.ForeignKey('flask_security_user.id')),
+    db.Column('role_id', db.Integer(), db.ForeignKey('flask_security_role.id')))
+
+# Setting up the user role table for managing permissions
+class UserRole(db.Model, RoleMixin):
+    __tablename__ = 'flask_security_role'
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+    description = db.Column(db.String(255))
 
 
 
-####################
-## DATABASE STUFF ##
-####################
+# Setting up the User table for managing users with permissions
+class User(db.Model, UserMixin):
+    __tablename__ = 'flask_security_user'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(40), unique=True)
+    password = db.Column(db.String(255))
+    email = db.Column(db.String(255))
+    active = db.Column(db.Boolean())
+    #confirmed_at = db.Column(db.DateTime())
+    roles = db.relationship(UserRole, secondary=roles_users,
+            backref=db.backref('users', lazy='dynamic'))
+
+    def hash_password(self, password):
+        self.password = bcrypt_sha256.hash(password)
+
+    def verify_password(self, password):
+        return bcrypt_sha256.verify(password, self.password)
+
+db.create_all()
+
+
+############
+# QUERYING #
+############
+
 def get_db():
     '''Sets up a psycopg2 database connection as configured in config.py'''
     return psycopg2.connect(**app.config['PSYCOPG2_LOGIN_INFO'])
@@ -70,41 +118,6 @@ def run_query(query_type, args):
                 if isinstance(value, Decimal):
                     row[i] = '{:.2f}'.format(value)
         return ([col[0] for col in cur.description], rows)
-
-# Define role relation
-# NOTE "user" is a reserved keyword in at least postgres
-roles_users = db.Table('sqlalch_roles_users',
-    db.Column('user_id', db.Integer(), db.ForeignKey('sqlalch_user.id')),
-    db.Column('role_id', db.Integer(), db.ForeignKey('sqlalch_role.id')))
-
-# Setting up the user role table for managing permissions
-class SQLAlchRole(db.Model, RoleMixin):
-    __tablename__ = 'sqlalch_role'
-    id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(80), unique=True)
-    description = db.Column(db.String(255))
-
-
-
-# Setting up the User table for managing users with permissions
-class User(db.Model, UserMixin):
-    __tablename__ = 'sqlalch_user'
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(40), unique=True)
-    password = db.Column(db.String(255))
-    email = db.Column(db.String(255))
-    active = db.Column(db.Boolean())
-    confirmed_at = db.Column(db.DateTime())
-    roles = db.relationship(SQLAlchRole, secondary=roles_users,
-            backref=db.backref('users', lazy='dynamic'))
-
-    def hash_password(self, password):
-        self.password = bcrypt_sha256.hash(password)
-
-    def verify_password(self, password):
-        return bcrypt_sha256.verify(password, self.password)
-
-
 
 
 ##########################
@@ -123,12 +136,12 @@ class extendedLoginForm(LoginForm):
         # Verify username field is not blank. We don't concern ourselves with email
         # because we don't use that to validate
         if self.username.data.strip() == '':
-            self.username.errors.append(get_message('USERNAME NOT PROVIDED'))
+            self.username.errors.append('USERNAME NOT PROVIDED')
             return False
 
         # If the password field is left blank, fail.
         if self.password.data.strip() == '':
-            self.password.errors.append(get_message('PASSWORD NOT PROVIDED'))
+            self.password.errors.append('PASSWORD NOT PROVIDED')
             return False
 
         # set the user to be the user name in the field and look it up
@@ -137,27 +150,27 @@ class extendedLoginForm(LoginForm):
 
         # Ensure the user exists in the database
         if self.user is None:
-            self.username.errors.append(get_message('INCORRECT USERNAME/PASSWORD'))
+            self.username.errors.append('INCORRECT USERNAME/PASSWORD')
             return False
 
         # Ensure the password was set
         if not self.user.password:
-            self.password.errors.append(get_message('PASSWORD WAS NOT SET'))
+            self.password.errors.append('PASSWORD WAS NOT SET')
             return False
 
         # Verify the password provided matches what is in the database for that user
         if not verify_and_update_password(self.password.data, self.user):
-            self.password.errors.append(get_message('INCORRECT USERNAME/PASSWORD'))
+            self.password.errors.append('INCORRECT USERNAME/PASSWORD')
             return False
 
         # If user confirmation is enabled and the user has not confirmed, deny access
         if requires_confirmation(self.user):
-            self.user.errors.append(get_message('CONFIRMATION REQUIRED'))
+            self.user.errors.append('CONFIRMATION REQUIRED')
             return False
 
         # Make sure that the user account is active and not disabled
         if not self.user.is_active:
-            self.username.errors.append(get_message('DISABLED ACCOUNT'))
+            self.username.errors.append('DISABLED ACCOUNT')
             return False
 
         # If all other checks are passed, the user is valid
@@ -168,7 +181,7 @@ class extendedRegisterForm(RegisterForm):
     username = StringField('Username', validators=[Required()])
 
 # Set up Flask-Security
-user_datastore = SQLAlchemyUserDatastore(db, User, SQLAlchRole)
+user_datastore = SQLAlchemyUserDatastore(db, User, UserRole)
 security = Security(app, user_datastore, login_form=extendedLoginForm, register_form=extendedRegisterForm)
 
 
@@ -182,15 +195,18 @@ def security_register_processor():
     return dict(username="email")
 
 
-# Creating a user to test authentication with
-#@app.before_first_request
-def create_user():
-    db.create_all()
+######################
+# CLICK CLI COMMANDS #
+######################
 
+# Creating a user to test authentication with
+# @app.before_first_request
+@app.cli.command('make-admin')
+def create_admin():
     admin = user_datastore.create_user(
         username='nullp0inter',
         email='iguibas@mail.usf.edu',
-        password=bcrypt_sha256.hash('_Hunter2'),
+        password='_Hunter2',
         active=True
     )
 
@@ -214,6 +230,7 @@ def initdb(number):
                 cur.execute(f.read())
 
         datagenerator.write_tables_db(number, conn, verbosity=1)
+    print('Database initialized')
 
 @app.cli.command('dbusertest')
 def dbusertest():
@@ -222,8 +239,6 @@ def dbusertest():
     for row in result:
         print('got username:', row['username'])
     conn.close()
-
-
 
 
 #########################
@@ -241,13 +256,6 @@ def profile(username):
 def index():
     return render_template('index.html')
 
-
-@app.route('/login', methods=['POST','GET'])
-def login():
-    '''Log in as an existing user'''
-    email = request.form['email']
-    passsword = bcrypt_sha256.hash(request.form['password'])
-    return redirect(url_for('index'))
 
 
 @app.route('/users')

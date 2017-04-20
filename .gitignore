@@ -3,6 +3,7 @@
 data/
 
 # Private configuration stuffs
+customconfig.py
 .secret*
 
 # Python stuff
