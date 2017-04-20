@@ -33,6 +33,9 @@ class Config():
     SESSION_COOKIE_HTTPONLY = True
     SECRET_KEY = key
     SECURITY_REGISTERABLE = True
+    SECURITY_USER_IDENTITY_ATTRIBUTES = 'username'
+    SECURITY_PASSWORD_HASH = 'bcrypt'
+    SECURITY_PASSWORD_SALT = 'SuperSecretSalt'
 
     FLASK_DEBUG=1
 

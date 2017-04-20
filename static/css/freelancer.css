@@ -1,3 +1,6 @@
+
+/*TESTING*/
+
 /*!
  * Start Bootstrap - Freelancer v3.3.7+1 (http://startbootstrap.com/template-overviews/freelancer)
  * Copyright 2013-2016 Start Bootstrap
@@ -84,7 +87,7 @@ header .intro-text .name {
   font-family: "Montserrat", "Helvetica Neue", Helvetica, Arial, sans-serif;
   text-transform: uppercase;
   font-weight: 700;
-  font-size: 2em;
+  font-size: 1em;
 }
 header .intro-text .skills {
   font-size: 1.25em;
@@ -106,7 +109,7 @@ header .intro-text .skills {
   background: #2C3E50;
   font-family: "Montserrat", "Helvetica Neue", Helvetica, Arial, sans-serif;
   text-transform: uppercase;
-  font-weight: 700;
+  font-weight: 400;
   border: none;
 }
 .navbar-custom .navbar-brand {
@@ -189,7 +192,7 @@ section.success {
     padding: 75px 0;
   }
   section.first {
-    padding-top: 75px;
+    padding-top: 120px;
   }
 }
 #portfolio .portfolio-item {

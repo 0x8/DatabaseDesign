@@ -47,24 +47,6 @@ CREATE TABLE Inventory (
     special BOOL NOT NULL
 );
 
--- Orders from product suppliers
-CREATE TABLE Orders (
-    oid SERIAL PRIMARY KEY,
-    sid INTEGER NOT NULL REFERENCES Stores (sid),
-    pid INTEGER NOT NULL REFERENCES Products (pid),
-    number INTEGER NOT NULL CHECK (number > 0),
-    cost NUMERIC NOT NULL CHECK (cost >= 0)
-);
-
--- Customer purchases
-CREATE TABLE Transactions (
-    txid SERIAL PRIMARY KEY,
-    sid INTEGER NOT NULL REFERENCES Stores (sid),
-    pid INTEGER NOT NULL REFERENCES Products (pid),
-    price NUMERIC NOT NULL CHECK (price >= 0),
-    amount NUMERIC NOT NULL
-);
-
 -- Employees
 CREATE TABLE Roles (
     roleid SERIAL PRIMARY KEY,
