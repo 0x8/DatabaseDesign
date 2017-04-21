@@ -74,7 +74,7 @@ def pass_gen():
     passwords = [ 'Hunter2','__Hunter2','Password','P@$$W0rd','Adm1n',
                   'SodiumB1c4rb0n4t3','Def4ult5']
     for password in random_choice_gen(passwords):
-        yield bcrypt_sha256.hash(password)
+        yield password
 
 
 # Generate random telephone number
