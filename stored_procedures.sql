@@ -182,35 +182,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 
--- Row holders for use in plpgsql functions
-CREATE IF NOT EXISTS TYPE employee_holder as (eid INT, firstname TEXT, lastname TEXT, hourly BOOL, pay FLOAT, roleid INT);
--- HERE is an example using such a type in plpgsql
-CREATE OR REPLACE FUNCTION getEmp(eid INT) RETURNS SETOF employee_holder AS $$
-DECLARE
-    r employee_holder%rowtype;
-BEGIN
-    
-    FOR r IN SELECT * FROM Employees WHERE E.eid=$1
-        RETURN NEXT r;
-    END LOOP;
-    RETURN;
-END;
-$$ LANGUAGE plpgsql;
-
-
--- Get the employees for a given store
-CREATE OR REPLACE FUNCTION get_emp_store(sid TEXT) RETURNS
-SETOF employees AS $$
-    SELECT *
-    FROM Employees E
-    WHERE E.eid IN (SELECT E1.eid
-                    FROM Stores S, Employment Emp, Employees E1
-                    WHERE Emp.sid=S.sid AND Emp.eid = E.eid
-                    AND S.sid=$1);
-$$ LANGUAGE plpgsql;
---$$ LANGUAGE 'sql' STABLE;
-
-
 
 -- EXAMPLE OF DYNAMIC QUERY
 -- This one uses SQL as the language but can insert dynamically into args:
