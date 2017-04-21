@@ -235,6 +235,20 @@ def initdb(number):
                 cur.execute(f.read())
 
         datagenerator.write_tables_db(number, conn, verbosity=1)
+
+    # schema.sql is destructive, flask-security tables need to be rebuilt
+    db.create_all()
+
+    user_fields, users = datagenerator.make_users(number, verbosity=1)
+    for user in users:
+        userdict = {k:v for k,v in zip(user_fields, user)}
+        user_datastore.create_user(
+            username=userdict['username'],
+            email=userdict['email'],
+            password=userdict['password'],
+            active=True)
+
+    db.session.commit()
     print('Database initialized')
 
 @app.cli.command('dbusertest')

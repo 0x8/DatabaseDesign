@@ -372,20 +372,26 @@ def make_orders(n, products, stores, suppliers, verbosity=False):
     return (fields, orders)
 
 def make_users(n, verbosity=False):
-    fields = ('uid', 'username', 'password', 'admin')
+    fields = ('username', 'email', 'password')
     unames = uname_gen()
     passwords = pass_gen()
-    is_admins = bool_gen()
 
     values = []
     for uid in range(1, n+1):
         uname = next(unames)
+        email = uname + '@example.com'
         password = next(passwords)
-        is_admin = next(is_admins)
-        values.append((uid, uname, password, is_admin))
+
+        if uname in (user[0] for user in values):
+            continue
+
+        values.append((uname, email, password))
 
         if verbosity:
             sys.stdout.write('\r{}/{} users'.format(uid, n))
+
+    if verbosity:
+        print()
 
     return (fields, values)
 
@@ -414,9 +420,6 @@ def create_tables(n, verbosity=0):
 
     #print('Creating suppliers')
     tables['suppliers'] = suppliers = make_suppliers(n, verbosity=verbosity)
-
-    #print('Creating users')
-    tables['users'] = users = make_users(n, verbosity=verbosity)
 
     return tables
 

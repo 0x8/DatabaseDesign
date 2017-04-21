@@ -66,11 +66,3 @@ CREATE TABLE Employment (
     sid INTEGER NOT NULL REFERENCES Stores (sid),
     eid INTEGER NOT NULL REFERENCES Employees (eid)
 );
-
--- Users of our site
-CREATE TABLE Users (
-    uid SERIAL PRIMARY KEY,
-    username TEXT NOT NULL,
-    password TEXT NOT NULL,
-    admin bool NOT NULL
-);
