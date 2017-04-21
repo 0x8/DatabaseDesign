@@ -5,8 +5,23 @@ Silkroad User Management
 {% endblock %}
 
 {% block content %}
+<div class="container">
+	<section id="Body">
+		<h2> Site users <h2>
+		<p>This page gives infomation about the sites users and grants the 
+		   ability to grant/revoke admin privileges for users in flask_security</p>
 
-<section id="Body">
-<h1>This section of the website is under construction</h1>
-</section>
+		<hr></hr>
+		
+		<h2>Statistical Overview</h2>
+		<h3><strong><p> Number of users: </strong> {{ userCount }}</p>
+		<strong><p> Number of admins: </strong> {{ admCount }}</p></h3>
+		
+		<hr></hr>
+
+		<h1>Flask Users</h1>
+		{{ usersTable }}
+
+	</section>
+</div>
 {% endblock %}
