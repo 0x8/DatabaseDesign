@@ -36,6 +36,10 @@ from flask_sqlalchemy import SQLAlchemy
 import psycopg2
 db = SQLAlchemy(app)
 
+# Flask_Table
+import flask_table
+
+
 # flask-debugtoolbar
 from flask_debugtoolbar import DebugToolbarExtension
 toolbar = DebugToolbarExtension(app)
@@ -240,6 +244,58 @@ def dbusertest():
     conn.close()
 
 
+#######################
+## Flask Table Stuff ##
+#######################
+
+from flask_table import Table, Col
+  
+
+
+class StoresTable(Table):
+    '''Declare the Stores Table
+    This declares the table for stores and their information.
+    It is important to rememebr that each variable declared
+    here counts as a "column" in the table and will be used
+    in the object class of the same type below. It is important
+    that whatever the names of attributes are match up between
+    the table and the "item" which is the "row"
+    '''
+    # Set the classes for the table
+    classes = ['table', 'table-inverse']
+
+    sid = Col('sid')
+    address = Col('address')
+    city = Col('city')
+    state = Col('state')
+    zip = Col('zip')
+    telno = Col('telno')
+
+    # Test for stores:
+    def getStores():
+        conn = db.engine.connect()
+        result = conn.execute('SELECT * FROM stores;')
+        conn.close()
+        return result
+
+
+
+
+# Get sthe store objects
+# class StoreRow(object):
+
+#     def __init__(self, sid, address, city,
+#                  state, zip, telno):
+#         self.sid = sid
+#         self.address = address
+#         self.city = city
+#         self.state = state
+#         self.zip = zip
+#         self.telno = telno
+
+
+
+
 #########################
 ## Routing Definitions ##
 #########################
@@ -266,35 +322,35 @@ def users_page():
 @app.route('/stores')
 @login_required
 def stores_page():
-    return render_template('stores.html')
 
+    # Generate the stores table
+    storesTable = StoresTable(StoresTable.getStores())
+    
+    # TODO A bit of logic to handle queries:
+
+
+    return render_template('stores.html', storesTable=storesTable)
+
+
+############################
+## Employee Table Builder ##
+## -----Flask_Tables----- ##
+############################
+class EmpTable(Tablle):
+    
 
 @app.route('/employees')
 @login_required
 def employees_page():
+
+
+
     return render_template('employees.html')
 
 
 @app.route('/acknowledgements', methods=['GET'])
 def acknowledgements():
     return render_template('acknowledgements.html')
-
-# @app.route('/register', methods=['POST','GET'])
-# def register():
-#     '''Register as a new user'''
-#     user = request.form['new_user']
-#     email = request.form['email']
-#     password = bcrypt_sha256.hash(request.form['new_pass'])
-
-#     user_datastore.create_user(
-#         username=user,
-#         email=email,
-#         password=password,
-#         active=True
-#     )
-
-#     return redirect(url_for('index'))
-
 
 if __name__ == '__main__':
     app.run()
