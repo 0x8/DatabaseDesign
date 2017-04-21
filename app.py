@@ -231,6 +231,8 @@ def initdb(number):
         with conn.cursor() as cur:
             with open('schema.sql','r') as f:
                 cur.execute(f.read())
+            with open('stored_procedures.sql','r') as f:
+                cur.execute(f.read())
 
         datagenerator.write_tables_db(number, conn, verbosity=1)
     print('Database initialized')
@@ -264,6 +266,8 @@ class StoresTable(Table):
     # Set the classes for the table
     classes = ['table', 'table-inverse']
 
+    # Allow table to be sortable
+
     sid = Col('sid')
     address = Col('address')
     city = Col('city')
@@ -278,21 +282,12 @@ class StoresTable(Table):
         conn.close()
         return result
 
-
-
-
-# Get sthe store objects
-# class StoreRow(object):
-
-#     def __init__(self, sid, address, city,
-#                  state, zip, telno):
-#         self.sid = sid
-#         self.address = address
-#         self.city = city
-#         self.state = state
-#         self.zip = zip
-#         self.telno = telno
-
+    def sort_url(self, col_key, reverse=False):
+        if reverse:
+            direction = 'desc'
+        else:
+            direction='asc'
+        return url_for('stores', sort=col_key, direction=direction)
 
 
 
@@ -336,16 +331,40 @@ def stores_page():
 ## Employee Table Builder ##
 ## -----Flask_Tables----- ##
 ############################
-class EmpTable(Tablle):
-    
+class EmpTable(Table):
+    '''Table container and generation class for Employees'''
+    eid=Col('eid')
+    firstname=Col('firstname')
+    lastname=Col('lastname')
+    hourly=Col('hourly')
+    pay = Col('pay')
+    roleid=Col('roleid')
+
+    def getEmployees():
+        conn = db.engine.connect()
+        result = conn.execute('''SELECT * FROM Employees
+                                 JOIN Employment.sid FROM 
+                                 Employment WHERE 
+                                 Employment.eid=Employees.eid''')
+        conn.close()
+        return result
+
 
 @app.route('/employees')
 @login_required
 def employees_page():
+    # Define the dynamic strings to work
+    avg_sal_str = 'Average Salary Pay:'
+    avg_hourly_str = 'Average Hourly Pay:'
+    sal_dev = 'Standard Deviation, Salary:'
+    hrly_dev = 'Standard Deviation, Hourly:'
 
+    # Define the table itself
+    empTable = EmpTable(EmpTable.getEmployees)
 
-
-    return render_template('employees.html')
+    return render_template('employees.html', avg_sal_str=avg_sal_str,
+        avg_hourly_str=avg_hourly_str, sal_dev=sal_dev, hrly_dev=hrly_dev,
+        empTable=empTable)
 
 
 @app.route('/acknowledgements', methods=['GET'])
