@@ -264,9 +264,7 @@ class StoresTable(Table):
     the table and the "item" which is the "row"
     '''
     # Set the classes for the table
-    classes = ['table', 'table-inverse']
-
-    # Allow table to be sortable
+    classes = ['table', 'table-inverse', 'inlineTable', 'table-condensed']
 
     sid = Col('sid')
     address = Col('address')
@@ -281,13 +279,6 @@ class StoresTable(Table):
         result = conn.execute('SELECT * FROM stores;')
         conn.close()
         return result
-
-    def sort_url(self, col_key, reverse=False):
-        if reverse:
-            direction = 'desc'
-        else:
-            direction='asc'
-        return url_for('stores', sort=col_key, direction=direction)
 
 
 
@@ -306,12 +297,43 @@ def profile(username):
 def index():
     return render_template('index.html')
 
+#########################
+## Users Table Buolder ##
+#########################
+class UsersTable(Table):
+
+    # Set the classes for the table
+    classes = ['table', 'table-inverse', 'inlineTable', 'table-condensed']
+
+    id=Col('id')
+    username=Col('username')
+    password=Col('password')
+    email=Col('email')
+    active=Col('active')
+
+    def getUsers():
+        conn = db.engine.connect()
+        result = conn.execute('SELECT * FROM flask_security_user;')
+        conn.close()
+        return result
+
 
 
 @app.route('/users')
 @login_required
 def users_page():
-    return render_template('users.html')
+
+    # Get the table for users:
+    usersTable = UsersTable(UsersTable.getUsers())
+
+    # Set up db to get numerical values
+    conn = db.engine.connect()
+    numUsers = conn.execute('SELECT COUNT(id) FROM flask_security_user;').fetchall()[0][0]
+    numAdmins = conn.execute('SELECT * FROM getNumFlaskAdmins();').fetchall()[0][0]
+    conn.close()
+
+    return render_template('users.html', usersTable=usersTable, 
+        userCount=numUsers, admCount=numAdmins)
 
 
 @app.route('/stores')
@@ -333,26 +355,30 @@ def stores_page():
 ############################
 class EmpTable(Table):
     '''Table container and generation class for Employees'''
+    
+    
+    # Set the classes for the table
+    classes = ['table', 'table-inverse', 'inlineTable', 'table-condensed']
+
     eid=Col('eid')
     firstname=Col('firstname')
     lastname=Col('lastname')
     hourly=Col('hourly')
     pay = Col('pay')
     roleid=Col('roleid')
+    sid=Col('sid')
 
     def getEmployees():
         conn = db.engine.connect()
-        result = conn.execute('''SELECT * FROM Employees
-                                 JOIN Employment.sid FROM 
-                                 Employment WHERE 
-                                 Employment.eid=Employees.eid''')
+        getEmps  = 'SELECT * FROM employees NATURAL JOIN employment;'
+        result = conn.execute(getEmps)
         conn.close()
         return result
-
 
 @app.route('/employees')
 @login_required
 def employees_page():
+
     # Define the dynamic strings to work
     avg_sal_str = 'Average Salary Pay:'
     avg_hourly_str = 'Average Hourly Pay:'
@@ -360,11 +386,18 @@ def employees_page():
     hrly_dev = 'Standard Deviation, Hourly:'
 
     # Define the table itself
-    empTable = EmpTable(EmpTable.getEmployees)
-
+    empTable = EmpTable(EmpTable.getEmployees())
     return render_template('employees.html', avg_sal_str=avg_sal_str,
         avg_hourly_str=avg_hourly_str, sal_dev=sal_dev, hrly_dev=hrly_dev,
         empTable=empTable)
+
+
+
+
+
+##############################
+## Custom Forms for buttons ##
+##############################
 
 
 @app.route('/acknowledgements', methods=['GET'])
