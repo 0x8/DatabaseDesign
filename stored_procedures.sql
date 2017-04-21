@@ -191,3 +191,19 @@ SETOF stores AS $$
     FROM Stores S
     WHERE LOWER(S.state)=LOWER($1);
 $$ LANGUAGE 'sql' STABLE;
+
+
+
+-- Query for number of admins in flask security
+CREATE OR REPLACE FUNCTION getNumFlaskAdmins() RETURNS INT AS $$
+DECLARE
+    numAdmins int := 0;
+BEGIN
+
+    SELECT INTO numAdmins COUNT(DISTINCT ID) 
+    FROM flask_security_user fu, flask_security_roles_users fru
+    WHERE fu.id=fru.user_id;
+
+    RETURN numAdmins;
+END;
+$$ LANGUAGE plpgsql;
