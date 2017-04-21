@@ -1,4 +1,4 @@
-{% extends "layouts/layout1.html" %}
+={% extends "layouts/layout1.html" %}
 
 {% block title %}
 Silkroad Employee Management
@@ -8,7 +8,18 @@ Silkroad Employee Management
 
 <div class="container">
 	<section id="Body">
-	<h1>This section of the website is under construction</h1>
+	<h1>Employees</h1>
+	<p>This page contains information about employees.
+	   Employees can be filtered by State, City, or Zip
+	   and metrics will change to reflect that.
+	</p>
+	<hr></hr>
+	<h2> Overview Summary: </h2>
+	<p><strong>{{ avg_sal_str }}</strong> {{ avg_sal }}</p>
+	<p><strong>{{ avg_hrly_str }}</strong> {{ avg_pay }}</p>
+	<p><strong>{{ sal_dev }}</strong></p>
+	<p><strong>{{ hrly_dev }}</strong></p>
+	<hr></hr>
 	</section>
 </div>
 
