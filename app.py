@@ -184,10 +184,15 @@ class extendedLoginForm(LoginForm):
 class extendedRegisterForm(RegisterForm):
     username = StringField('Username', validators=[Required()])
 
+
 # Set up Flask-Security
 user_datastore = SQLAlchemyUserDatastore(db, User, UserRole)
 security = Security(app, user_datastore, login_form=extendedLoginForm, register_form=extendedRegisterForm)
 
+# Make sure flask-security doesn't send any mail
+@security.send_mail_task
+def dont_send_mail_hack(msg):
+    pass
 
 # Adding login via username through flask_security
 @security.login_context_processor
