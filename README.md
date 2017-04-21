@@ -12,12 +12,18 @@ Install python requirements using pip:
 Note: if you are not using a `virtualenv` and pip complains about permissions,
 add the `--user` flag to `pip install`.
 
-Setup `config.py` to point to the right postgres database. Example:
+Setup `customconfig.py` to override the defaults in `appconfig.py` by creating a
+single class named `Config`. Example:
 
-    db_host = 'localhost'
-    db_port = 5432
-    db_name = 'my_database_name'
-    db_password = 'my_password'
+    class Config:
+        SQLALCHEMY_DATABASE_URI = 'postgresql://user:pass@host:port/dbname'
+
+        PSYCOPG2_LOGIN_INFO = {
+            'host': 'localhost',
+            'port': 5432,
+            'dbname': 'my_database_name',
+            'password': 'my_password'
+        }
 
 ## Running
 
@@ -27,5 +33,8 @@ Setup `config.py` to point to the right postgres database. Example:
 #### Commands
 
 * `initdb` Initializes databse with random information from `datagenerator.py`
+* `make-admin` Create a single admin user
+* `dbusertest` Prints usernames in the database
 * `run` Runs the flask web server
   * `--debugger`/`--no-debugger` Turn on (or off) the flask debugger. Off by default.
+* `shell` Run a python interpreter in the application environment

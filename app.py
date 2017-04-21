@@ -259,7 +259,7 @@ def initdb(number):
 @app.cli.command('dbusertest')
 def dbusertest():
     conn = db.engine.connect()
-    result = conn.execute('SELECT username from users;')
+    result = conn.execute('SELECT username from flask_security_user;')
     for row in result:
         print('got username:', row['username'])
     conn.close()
