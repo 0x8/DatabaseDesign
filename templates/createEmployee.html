@@ -1,0 +1,22 @@
+{% extends 'layouts/layout1.html' %}
+
+{% block content %}
+	
+	<div class='container'>
+		<h1> Employee Creation Page </h1>
+		<p> Enter the requested information below to create a new employee in the database </p>
+		<hr></hr>
+
+		<!-- WTForms requires being decently verbose about fields 
+			 and containing them within their own div tags        -->
+		<form method='POST' action='/createEmployee'>
+			<div>{{ cform.firstname.label }}: {{ cform.firstname }}</div>
+			<div>{{ cform.lastname.label  }}: {{ cform.lastname  }}</div>
+			<div>{{ cform.hourly.label    }}: {{ cform.hourly    }}</div>
+			<div>{{ cform.pay.label       }}: {{ cform.pay       }}</div>
+			<div>{{ cform.roleid.label    }}: {{ cform.roleid    }}</div>
+			<div>{{ cform.sid.label       }}: {{ cform.sid       }}</div>
+		</form>
+	</div>
+
+{% endblock %}
