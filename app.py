@@ -184,7 +184,6 @@ class extendedLoginForm(LoginForm):
 class extendedRegisterForm(RegisterForm):
     username = StringField('Username', validators=[Required()])
 
-
 # Set up Flask-Security
 user_datastore = SQLAlchemyUserDatastore(db, User, UserRole)
 security = Security(app, user_datastore, login_form=extendedLoginForm, register_form=extendedRegisterForm)
@@ -202,6 +201,7 @@ def security_register_processor():
 @security.register_context_processor
 def security_register_processor():
     return dict(username="email")
+
 
 
 ######################
@@ -227,7 +227,6 @@ def create_admin():
     db.session.commit()
 
 
-
 @app.cli.command('initdb')
 @click.argument('number', default=20)
 def initdb(number):
@@ -240,6 +239,7 @@ def initdb(number):
                 cur.execute(f.read())
 
         datagenerator.write_tables_db(number, conn, verbosity=1)
+
 
     # schema.sql is destructive, flask-security tables need to be rebuilt
     db.create_all()
@@ -256,6 +256,8 @@ def initdb(number):
     db.session.commit()
     print('Database initialized')
 
+
+
 @app.cli.command('dbusertest')
 def dbusertest():
     conn = db.engine.connect()
@@ -265,14 +267,13 @@ def dbusertest():
     conn.close()
 
 
+
 #######################
 ## Flask Table Stuff ##
 #######################
 
 from flask_table import Table, Col
   
-
-
 class StoresTable(Table):
     '''Declare the Stores Table
     This declares the table for stores and their information.
@@ -301,6 +302,30 @@ class StoresTable(Table):
 
 
 
+##############################
+## WTForms for DB Insertion ##
+##############################
+
+from wtforms import FloatField, IntegerField, SelectField
+
+# Employee Creation
+class EmpCreate(Form):
+    '''Creates the input form for all information for new Employees
+    This makes use of WTForms to create the form used in adding a new
+    employee to the database. It allows easily forcing requirements
+    and other validation
+    '''
+    firstname = StringField('First Name', validators=[Required()])
+    lastname  = StringField('Last Name', validators=[Required()])
+    hourly    = BooleanField('Paid Hourly', validators=[Required()])
+    pay       = FloatField('Pay', validators=[Required()])
+    roleid    = SelectField('Role ID', choices=[('1','Cashier'),('2','Manager'),
+        ('3','Stocker'),('4','Human Resources'),('5','Information Technology')], 
+         validators=[Required()])
+    sid       = IntegerField('Store ID', validators=[Required()])
+
+
+
 #########################
 ## Routing Definitions ##
 #########################
@@ -315,6 +340,8 @@ def profile(username):
 @login_required
 def index():
     return render_template('index.html')
+
+
 
 #########################
 ## Users Table Buolder ##
@@ -336,6 +363,16 @@ class UsersTable(Table):
         conn.close()
         return result
 
+
+@app.route('/createEmployee')
+@login_required
+def createEmployee():
+    cform = EmpCreate()
+    if request.method == 'POST' and cform.validate():
+        # Enter the user
+        pass
+
+    return render_template('createEmployee.html', cform=cform)
 
 
 @app.route('/users')
@@ -366,6 +403,7 @@ def stores_page():
 
 
     return render_template('stores.html', storesTable=storesTable)
+
 
 
 ############################
