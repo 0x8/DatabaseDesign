@@ -2,6 +2,16 @@
 
 {% block content %}
 <div class="container">
+  <script type="text/javascript">
+      $(document).ready(function(){
+          $('#query-type-selector input').on('click', function(event){
+              $('#query-type-selection')[0].textContent = event.target.value;
+              $('#hidden-query-type')[0].value = event.target.dataset.queryType;
+              $('#query-type-selector').click();
+          });
+      });
+  </script>
+
 	<section id="Body">
 		<h2>Products Information</h2>
 		<p> This page displays information about products based on
@@ -15,35 +25,58 @@
 			<p><strong> Products on sale: </strong> {{ numSale }}</p>
 		</h3>
 		<hr></hr>
-		<!-- Search menu and input field -->
-		<div class="row">
-			<div class="col-lg-6">
-				<div class="input-group">
-					<div class="input-group-btn">
-						<button class="btn btn-primary dropdown-toggle"
-							data-toggle="dropdown" aria-haspopup="true"
-							aria-expanded="false"> Select search type
-							<span class="caret"></span>
-						</button>	
-						<ul class="dropdown-menu">
-							<li><button class="btn btn-primary" id='search_byStore' style="width:100%">Search By Store</button></li>
-							<li><button class="btn btn-primary" id='search_byState' style="width:100%">Search By State</button></li>
-							<li><button class="btn btn-primary" id='search_byCity' style="width:100%">Search By City</button></li>
-							<li><button class="btn btn-primary" id='search_byZip' style="width:100%">Search By Zip</button></li>
-							<li><button class="btn btn-primary" id='search_byColor' style="
-							width:100%">Search By Color</button></li>
-						</ul>
-					</div>
-				<input type="text" class="form-control" id="sortKey">
-			</div>
-		</div>
-		<button id="GO" class="btn btn-primary">Search</button>
-		
-		<hr></hr>
 
-		<!-- Prints the table -->
-		<h1>Products Table</h1>
-		{{ productsTable }}
+		<!-- Search menu and input field -->
+		<form method="/products">
+        <div class="row">
+			      <div class="col-lg-6">
+				        <div class="input-group">
+					          <div class="input-group-btn">
+                        <input type="hidden" name="query_type" id="hidden-query-type" />
+						            <button class="btn btn-primary dropdown-toggle"
+                                data-toggle="dropdown" aria-haspopup="true"
+                                aria-expanded="false"> Select search type
+							              <span class="caret"></span>
+						            </button>
+						            <ul class="dropdown-menu" id="query-type-selector">
+						              <li>
+                              <input type="button" style="width:100%"
+                                     class="btn btn-primary" id='search_byStore'
+                                     value="Search By Store" data-query-type="store" />
+                          </li>
+						              <li>
+                              <input type="button" style="width:100%"
+                                     class="btn btn-primary" id='search_byState'
+                                     value="Search by State" data-query-type="state">
+                          </li>
+						              <li>
+                              <input type="button" style="width:100%"
+                                     class="btn btn-primary" id='search_byCity'
+                                     value="Search by City" data-query-type="city">
+                          </li>
+						              <li>
+                              <input type="button" style="width:100%"
+                                     class="btn btn-primary" id='search_byZip'
+                                     value="Search by Zip" data-query-type="zip">
+                          </li>
+						              <li>
+                              <input type="button" style="width:100%"
+                                     class="btn btn-primary" id='search_byColor'
+                                     value="Search By Store" data-query-type="color" />
+                          </li>
+						            </ul>
+					          </div>
+				            <input type="text" class="form-control" id="sortKey">
+			          </div>
+		        </div>
+		        <button id="GO" class="btn btn-primary">Search</button>
+
+		        <hr></hr>
+
+		        <!-- Prints the table -->
+		        <h1>Products Table</h1>
+		        {{ productsTable }}
 	</section>
-</div>
+        </div>
+    </form>
 {% endblock %}
