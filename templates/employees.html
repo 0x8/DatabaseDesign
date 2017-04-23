@@ -18,21 +18,21 @@ Silkroad Employee Management
   </script>
 
 	<section id="Body">
-	<h2>Employees</h2>
-	<p>This page contains information about employees.
-	   Employees can be filtered by State, City, or Zip
-	   and metrics will change to reflect that.
-	</p>
-	<hr></hr>
-	<h2> Overview Summary: </h2>
-	<p><strong>{{ avg_sal_str }}</strong> {{ avg_sal }}</p>
-	<p><strong>{{ avg_hourly_str }}</strong> {{ avg_pay }}</p>
-	<p><strong>{{ sal_dev }}</strong></p>
-	<p><strong>{{ hrly_dev }}</strong></p>
+		<h2>Employees</h2>
+		<p>This page contains information about employees.
+		   Employees can be filtered by State, City, or Zip
+		   and metrics will change to reflect that.
+		</p>
+		<hr></hr>
+		<h2> Overview Summary: </h2>
+		<h3>
+			<p><strong>{{ avg_sal_str }}</strong>    {{ avg_sal }}</p>
+			<p><strong>{{ avg_hourly_str }}</strong>    {{ avg_hrly }}</p>
+		</h3>
 
-	<hr></hr>
+		<hr></hr>
 
-	<!-- Search menu and input field -->
+		<!-- Search menu and input field -->
   <form method="/employees">
 	    <div class="row">
 		      <div class="col-lg-6">
@@ -84,14 +84,14 @@ Silkroad Employee Management
       Create New Employee
   </button>
 
-	<hr></hr>
+		<hr></hr>
 
-	<h3>Coming soon: Employee deletion</h3>
+		<h3>Coming soon: Employee deletion</h3>
 
-	<hr></hr>
+		<hr></hr>
 
-	<h1>Employees Table</h1>
-	{{ empTable }}
+		<h1>Employees Table</h1>
+		{{ empTable }}
 	</section>
 </div>
 

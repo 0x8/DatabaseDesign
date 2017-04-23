@@ -1,0 +1,49 @@
+{% extends 'layouts/layout1.html' %}
+
+{% block content %}
+<div class="container">
+	<section id="Body">
+		<h2>Products Information</h2>
+		<p> This page displays information about products based on
+			location. It defaults to showing all unique products available
+		</p>
+		<hr></hr>
+		<h2> Statistics </h2>
+		<h3>
+			<p><strong> Unique Products: </strong> {{ numProducts }}</p>
+			<p><strong> Average Price: </strong> {{ avgPrice }}</p>
+			<p><strong> Products on sale: </strong> {{ numSale }}</p>
+		</h3>
+		<hr></hr>
+		<!-- Search menu and input field -->
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="input-group">
+					<div class="input-group-btn">
+						<button class="btn btn-primary dropdown-toggle"
+							data-toggle="dropdown" aria-haspopup="true"
+							aria-expanded="false"> Select search type
+							<span class="caret"></span>
+						</button>	
+						<ul class="dropdown-menu">
+							<li><button class="btn btn-primary" id='search_byStore' style="width:100%">Search By Store</button></li>
+							<li><button class="btn btn-primary" id='search_byState' style="width:100%">Search By State</button></li>
+							<li><button class="btn btn-primary" id='search_byCity' style="width:100%">Search By City</button></li>
+							<li><button class="btn btn-primary" id='search_byZip' style="width:100%">Search By Zip</button></li>
+							<li><button class="btn btn-primary" id='search_byColor' style="
+							width:100%">Search By Color</button></li>
+						</ul>
+					</div>
+				<input type="text" class="form-control" id="sortKey">
+			</div>
+		</div>
+		<button id="GO" class="btn btn-primary">Search</button>
+		
+		<hr></hr>
+
+		<!-- Prints the table -->
+		<h1>Products Table</h1>
+		{{ productsTable }}
+	</section>
+</div>
+{% endblock %}
