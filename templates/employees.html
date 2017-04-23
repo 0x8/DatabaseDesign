@@ -8,49 +8,56 @@ Silkroad Employee Management
 
 <div class="container">
 	<section id="Body">
-		<h2>Employees</h2>
-		<p>This page contains information about employees.
-		   Employees can be filtered by State, City, or Zip
-		   and metrics will change to reflect that.
-		</p>
-		<hr></hr>
-		<h2> Overview Summary: </h2>
-		<h3>	
-			<p><strong>{{ avg_sal_str }}</strong>    {{ avg_sal }}</p>
-			<p><strong>{{ avg_hourly_str }}</strong>    {{ avg_hrly }}</p>
-		</h3>
-
-		<hr></hr>
 		
-		<!-- Search menu and input field -->
-		<div class="row">
-			<div class="col-lg-6">
-				<div class="input-group">
-					<div class="input-group-btn">
-						<button class="btn btn-primary dropdown-toggle"
-							data-toggle="dropdown" aria-haspopup="true"
-							aria-expanded="flase"> Select search type
-							<span class="caret"></span>
-						</button>	
-						<ul class="dropdown-menu">
-							<li><button class="btn btn-primary" id='search_byStore' style="width:100%">Search By Store</button></li>
-							<li><button class="btn btn-primary" id='search_byState' style="width:100%">Search By State</button></li>
-							<li><button class="btn btn-primary" id='search_byCity' style="width:100%">Search By City</button></li>
-							<li><button class="btn btn-primary" id='search_byZip' style="width:100%">Search By Zip</button></li>
-						</ul>
-					</div>
-				<input type="text" class="form-control" id="sortKey">
-			</div>
+	<h2>Employees</h2>
+	
+	<p>This page contains information about employees.
+	   Employees can be filtered by State, City, or Zip
+	   and metrics will change to reflect that.
+	</p>
+	
+	<hr></hr>
+	
+	<h2> Overview Summary: </h2>
+	<h3>	
+		<p><strong>{{ avg_sal_str }}</strong>    {{ avg_sal }}</p>
+		<p><strong>{{ avg_hourly_str }}</strong>    {{ avg_hrly }}</p>
+	</h3>
+
+	<hr></hr>
+
+	<!-- Search menu and input field -->
+	<div class="row">
+		<div class="col-lg-6">
+			<div class="input-group">
+				<div class="input-group-btn">
+					<button class="btn btn-primary dropdown-toggle"
+						data-toggle="dropdown" aria-haspopup="true"
+						aria-expanded="flase"> Select search type
+						<span class="caret"></span>
+					</button>
+					<ul class="dropdown-menu">
+						<li><button class="btn btn-primary" id='search_byStore' style="width:100%">Search By Store</button></li>
+						<li><button class="btn btn-primary" id='search_byState' style="width:100%">Search By State</button></li>
+						<li><button class="btn btn-primary" id='search_byCity' style="width:100%">Search By City</button></li>
+						<li><button class="btn btn-primary" id='search_byZip' style="width:100%">Search By Zip</button></li>
+					</ul>
+				</div>
+			<input type="text" class="form-control" id="sortKey">
 		</div>
-		<button id="GO" class="btn btn-primary">Search</button>
-		
-		<hr></hr>
+	</div>
+	<button id="GO" class="btn btn-primary">Search</button>
 
-		<!-- Need to add logic to redirect to page and then on that page submit, get back here -->
-		<!-- In prep, I am calling that page "Create Employee", which will also require assigning him to a store
-			 since it is not allowed to have employees belonging nowhere. This means it will update both the
-			 Employees table AND the Stores table. -->
-		<button class='btn btn-primary' href='/CreateEmployee'>Create New Employee</button>
+	<hr></hr>
+
+	<!-- Need to add logic to redirect to page and then on that page submit, get back here -->
+	<!-- In prep, I am calling that page "Create Employee", which will also require assigning him to a store
+		 since it is not allowed to have employees belonging nowhere. This means it will update both the
+		 Employees table AND the Stores table. -->
+	<button class='btn btn-primary' onclick='window.location = "/createEmployee"'>
+      Create New Employee
+  	</button>
+>>>>>>> 3ffeb957dc467e02f428a3abd1e30e344c93384f
 
 		<hr></hr>
 
