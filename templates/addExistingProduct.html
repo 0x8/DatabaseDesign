@@ -1,0 +1,29 @@
+{% extends 'layouts/layout1.html' %}
+{% from "security/_macros.html" import render_field_with_errors, render_field %}
+
+{% block title %}
+Product Addition
+{% endblock %}
+
+{% block content %}
+<div class="container">
+	<section id="Body">
+		<h2> Add Existing Product </h2>
+		<p> This page allows adding an existing product to an existing store. 
+			If the product already exists in that store, the information
+			such as price and quantity will be updated.
+		</p>
+		<hr></hr>
+
+		<form method="POST" action="/createProduct">
+			{{ form.csrf_token }}
+			<div>{{ render_field_with_errors(form.pid)   }}</div>
+			<div>{{ render_field_with_errors(form.sid)   }}</div>
+			<div>{{ render_field_with_errors(form.price) }}</div>
+			<div>{{ render_field_with_errors(form.qty) 	 }}</div>
+			<div>{{ render_field_with_errors(form.sale)  }}</div>
+			<div>{{ render_field(form.submit)			 }}</div>
+		</form>
+	</section>
+</div>
+{% endblock %}
