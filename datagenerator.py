@@ -158,7 +158,7 @@ def make_roles(n, verbosity=False):
     if verbosity:
         print('{0}/{0} roles'.format(len(values)))
 
-    return (fields, values)
+    return {'fields': fields, 'values': values, 'pkey': 'roleid', 'max': max((v[0] for v in values), default=1)}
 
 def make_employees(n, roles, verbosity=False):
     fields = ('eid', 'firstname', 'lastname', 'roleid', 'pay', 'hourly')
@@ -180,7 +180,7 @@ def make_employees(n, roles, verbosity=False):
     if verbosity:
         print()
 
-    return (fields, employees)
+    return {'fields': fields, 'values': employees, 'pkey': 'eid', 'max': n}
 
 def make_employment(n, employees, stores, verbosity=False):
     fields = ('sid', 'eid')
@@ -196,7 +196,7 @@ def make_employment(n, employees, stores, verbosity=False):
     if verbosity:
         print()
 
-    return (fields, employment_list)
+    return {'fields': fields, 'values': employment_list}
 
 def make_stores(n, verbosity=False):
     '''make_stores(n) -> list of store dicts
@@ -223,7 +223,7 @@ def make_stores(n, verbosity=False):
     if verbosity:
         print()
 
-    return (fields, values)
+    return {'fields': fields, 'values': values, 'pkey': 'sid', 'max': n}
 
 def make_products(n, verbosity=False):
     '''make_product(n) -> list of product dicts
@@ -252,7 +252,7 @@ def make_products(n, verbosity=False):
     if verbosity:
         print()
 
-    return (fields, values)
+    return {'fields': fields, 'values': values, 'pkey': 'pid', 'max': n}
 
 def make_inventory(n, stores, products, verbosity=False):
     '''make_inventory(n) -> list of inventory dicts
@@ -286,39 +286,39 @@ def make_inventory(n, stores, products, verbosity=False):
     if verbosity:
         print()
 
-    return (fields, inventory)
+    return {'fields': fields, 'values': inventory}
 
 # Not used any more
-def make_transactions(n, stores, products, verbosity=False):
-    '''make_transactions(n, stores, products) -> list of transaction dicts
-
-    This holds records of transactions per store. A good idea for maintaining
-    uniqueness here might be to take the cid of the customers table and the
-    current time and hash that as the txid. Attributes are:
-
-    txid = unique transaction identifier
-    sid = store id
-    amount = total for the transaction
-    '''
-
-    fields = ('txid', 'sid', 'pid', 'price', 'amount')
-
-    price_gen = decimal_gen(10, 100, 2)
-    transactions = []
-    for txid in range(1, n+1):
-        sid = random.choice(stores)[0]
-        pid = random.choice(products)[0]
-        price = next(price_gen)
-        amount = random.randint(1, 10)
-        transactions.append((txid, sid, pid, price, amount))
-
-        if verbosity:
-            sys.stdout.write('\r{}/{} transactions'.format(txid, n))
-
-    if verbosity:
-        print()
-
-    return (fields, transactions)
+# def make_transactions(n, stores, products, verbosity=False):
+#     '''make_transactions(n, stores, products) -> list of transaction dicts
+#
+#     This holds records of transactions per store. A good idea for maintaining
+#     uniqueness here might be to take the cid of the customers table and the
+#     current time and hash that as the txid. Attributes are:
+#
+#     txid = unique transaction identifier
+#     sid = store id
+#     amount = total for the transaction
+#     '''
+#
+#     fields = ('txid', 'sid', 'pid', 'price', 'amount')
+#
+#     price_gen = decimal_gen(10, 100, 2)
+#     transactions = []
+#     for txid in range(1, n+1):
+#         sid = random.choice(stores)[0]
+#         pid = random.choice(products)[0]
+#         price = next(price_gen)
+#         amount = random.randint(1, 10)
+#         transactions.append((txid, sid, pid, price, amount))
+#
+#         if verbosity:
+#             sys.stdout.write('\r{}/{} transactions'.format(txid, n))
+#
+#     if verbosity:
+#         print()
+#
+#     return {'fields': fields, 'values': transactions, 'pkey': 'txid', 'max': n}
 
 def make_suppliers(n, verbosity=False):
     '''make_suppliers(n) -> list of supplier dicts
@@ -336,7 +336,7 @@ def make_suppliers(n, verbosity=False):
     if verbosity:
         print ('{0}/{0} suppliers'.format(n))
 
-    return (fields, values)
+    return {'fields': fields, 'values': values, 'pkey': 'supid', 'max': max((v[0] for v in values), default=1)}
 
 # def make_supplies(n, products, suppliers, verbosity=False):
 #     fields = ('supid', 'pid', 'cost', 'qty')
@@ -352,25 +352,26 @@ def make_suppliers(n, verbosity=False):
 #     return (fields, supplies)
 
 # Not used any more
-def make_orders(n, products, stores, suppliers, verbosity=False):
-    fields = ('oid', 'sid', 'pid', 'number', 'cost')
-    orders = []
-    price_gen = decimal_gen(1000, 100000, 2)
-    for oid in range(1, n+1):
-        sid = random.choice(stores)[0]
-        pid = random.choice(products)[0]
-        number = random.randint(100, 1000)
-        cost = next(price_gen)
-        orders.append((oid, sid, pid, number, cost))
+# def make_orders(n, products, stores, suppliers, verbosity=False):
+#     fields = ('oid', 'sid', 'pid', 'number', 'cost')
+#     orders = []
+#     price_gen = decimal_gen(1000, 100000, 2)
+#     for oid in range(1, n+1):
+#         sid = random.choice(stores)[0]
+#         pid = random.choice(products)[0]
+#         number = random.randint(100, 1000)
+#         cost = next(price_gen)
+#         orders.append((oid, sid, pid, number, cost))
+#
+#         if verbosity:
+#             sys.stdout.write('\r{}/{} orders'.format(oid, n))
+#
+#     if verbosity:
+#         print()
+#
+#     return {'fields': fields, 'values': orders, 'pkey': 'oid', 'max': n}
 
-        if verbosity:
-            sys.stdout.write('\r{}/{} orders'.format(oid, n))
-
-    if verbosity:
-        print()
-
-    return (fields, orders)
-
+# Not used in this file, still used in app.initdb
 def make_users(n, verbosity=False):
     fields = ('username', 'email', 'password')
     unames = uname_gen()
@@ -393,7 +394,7 @@ def make_users(n, verbosity=False):
     if verbosity:
         print()
 
-    return (fields, values)
+    return {'fields': fields, 'values': values, 'pkey': 'uid', 'max': n}
 
 
 # Generate the actual CSV files
@@ -404,19 +405,19 @@ def create_tables(n, verbosity=0):
     tables['roles'] = roles = make_roles(n, verbosity=verbosity)
 
     #print('Creating employees')
-    tables['employees'] = employees = make_employees(n, roles[1], verbosity=verbosity)
+    tables['employees'] = employees = make_employees(n, roles['values'], verbosity=verbosity)
 
     #print('Creating stores')
     tables['stores'] = stores = make_stores(n, verbosity=verbosity)
 
     #print('Creating employment')
-    tables['employment'] = employment = make_employment(n, employees[1], stores[1], verbosity=verbosity)
+    tables['employment'] = employment = make_employment(n, employees['values'], stores['values'], verbosity=verbosity)
 
     #print('Creating products')
     tables['products'] = products = make_products(n, verbosity=verbosity)
 
     #print('Creating inventory')
-    tables['inventory'] = inventory = make_inventory(n, stores[1], products[1], verbosity=verbosity)
+    tables['inventory'] = inventory = make_inventory(n, stores['values'], products['values'], verbosity=verbosity)
 
     #print('Creating suppliers')
     tables['suppliers'] = suppliers = make_suppliers(n, verbosity=verbosity)
@@ -426,31 +427,35 @@ def create_tables(n, verbosity=0):
 def write_tables_csv(n, verbosity=0):
     tables = create_tables(n, verbosity)
 
-    for tablename, table in tables.items():
+    for tablename, tabledict in tables.items():
         path = os.path.join(THIS_FILE_PATH, 'data', tablename + '.csv')
         with open(path, 'w') as f:
             if verbosity:
-                print('Writing {} rows to {}'.format(len(table[1]), path))
+                print('Writing {} rows to {}'.format(len(tabledict['values']), path))
 
             writer = csv.writer(f)
-            writer.writerow(table[0])
-            writer.writerows(table[1])
+            writer.writerow(tabledict['fields'])
+            writer.writerows(tabledict['values'])
 
 def write_tables_db(n, conn, verbosity=0):
     tables = create_tables(n, verbosity)
 
     with conn.cursor() as cur:
-        for tablename, table in tables.items():
-            fieldspec = '(' + ','.join(table[0]) + ')'
+        for tablename, tabledict in tables.items():
+            fieldspec = '(' + ','.join(tabledict['fields']) + ')'
             query = 'insert into {} {} values %s'.format(tablename, fieldspec)
             if verbosity:
                 print(query)
 
-            for row in table[1]:
+            for row in tabledict['values']:
                 if verbosity > 1:
                     print(row)
 
                 cur.execute(query, (row,))
+
+            if 'pkey' in tabledict:
+                query = "select setval('{}_{}_seq', %s)".format(tablename, tabledict['pkey'])
+                cur.execute(query, (tabledict['max'],))
 
 
 # =============== [ Main ] ============== #

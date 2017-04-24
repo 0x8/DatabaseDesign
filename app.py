@@ -239,8 +239,8 @@ def initdb(number):
         with conn.cursor() as cur:
             with open('schema.sql','r') as f:
                 cur.execute(f.read())
-            with open('stored_procedures.sql','r') as f:
-                cur.execute(f.read())
+            #with open('stored_procedures.sql','r') as f:
+                #cur.execute(f.read())
 
         datagenerator.write_tables_db(number, conn, verbosity=1)
 
@@ -248,7 +248,9 @@ def initdb(number):
     # schema.sql is destructive, flask-security tables need to be rebuilt
     db.create_all()
 
-    user_fields, users = datagenerator.make_users(number, verbosity=1)
+    users_table_dict = datagenerator.make_users(number, verbosity=1)
+    user_fields = users_table_dict['fields']
+    users = users_table_dict['values']
     for user in users:
         userdict = {k:v for k,v in zip(user_fields, user)}
         user_datastore.create_user(
