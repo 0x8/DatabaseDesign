@@ -1,4 +1,4 @@
-{% extends "layouts/layout1.html" %}
+{% extends "layouts/layout2.html" %}
 {% from "security/_macros.html" import render_field_with_errors, render_field %}
 {% include "security/_messages.html" %}
 {% block title %}
@@ -16,7 +16,6 @@
 		  {{ render_field(login_user_form.next) }}
 		  {{ render_field(login_user_form.submit, class="btn btn-primary") }}
 		</form>
-		{% include "security/_menu.html" %}
 	</div>
 </section>
 {% endblock content %}
