@@ -239,8 +239,8 @@ def initdb(number):
         with conn.cursor() as cur:
             with open('schema.sql','r') as f:
                 cur.execute(f.read())
-            #with open('stored_procedures.sql','r') as f:
-                #cur.execute(f.read())
+            with open('stored_procedures.sql','r') as f:
+                cur.execute(f.read())
 
         datagenerator.write_tables_db(number, conn, verbosity=1)
 

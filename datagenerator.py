@@ -185,7 +185,16 @@ def make_employees(n, roles, verbosity=False):
 def make_employment(n, employees, stores, verbosity=False):
     fields = ('sid', 'eid')
     employment_list = []
-    for i in range(n):
+
+    # Make sure each store has at least one employee
+    for i, store in enumerate(stores):
+        if verbosity:
+            sys.stdout.write('\r{}/{} employments'.format(i+1, n))
+
+        eid = random.choice(employees)[0]
+        employment_list.append((store[0], eid))
+
+    for j in range(i+1, n+1):
         if verbosity:
             sys.stdout.write('\r{}/{} employments'.format(i+1, n))
 
@@ -405,19 +414,19 @@ def create_tables(n, verbosity=0):
     tables['roles'] = roles = make_roles(n, verbosity=verbosity)
 
     #print('Creating employees')
-    tables['employees'] = employees = make_employees(n, roles['values'], verbosity=verbosity)
+    tables['employees'] = employees = make_employees(10*n, roles['values'], verbosity=verbosity)
 
     #print('Creating stores')
     tables['stores'] = stores = make_stores(n, verbosity=verbosity)
 
     #print('Creating employment')
-    tables['employment'] = employment = make_employment(n, employees['values'], stores['values'], verbosity=verbosity)
+    tables['employment'] = employment = make_employment(12*n, employees['values'], stores['values'], verbosity=verbosity)
 
     #print('Creating products')
     tables['products'] = products = make_products(n, verbosity=verbosity)
 
     #print('Creating inventory')
-    tables['inventory'] = inventory = make_inventory(n, stores['values'], products['values'], verbosity=verbosity)
+    tables['inventory'] = inventory = make_inventory(10*n, stores['values'], products['values'], verbosity=verbosity)
 
     #print('Creating suppliers')
     tables['suppliers'] = suppliers = make_suppliers(n, verbosity=verbosity)
