@@ -27,7 +27,6 @@ try:
 except ImportError as e:
     print(e)
 
-
 # Database
 from flask_sqlalchemy import SQLAlchemy
 import psycopg2
@@ -37,8 +36,9 @@ db = SQLAlchemy(app)
 import forms
 forms.db.init_app(app)
 
-# Flask_Table
-from flask_table import Table, Col
+# Tables
+import tables
+tables.db.init_app(app)
 
 # flask-debugtoolbar
 from flask_debugtoolbar import DebugToolbarExtension
@@ -49,11 +49,12 @@ from flask_security import Security, SQLAlchemyUserDatastore
 from flask_security import UserMixin, RoleMixin
 from flask_security import login_required
 
+# Misc
 from passlib.hash import bcrypt_sha256
 import click
 from decimal import Decimal
 
-# User defined features
+# Project local stuff
 import datagenerator
 import query
 
@@ -226,34 +227,12 @@ def profile(username):
 def index():
     return render_template('index.html')
 
-
-#########################
-## Users Table Builder ##
-#########################
-class UsersTable(Table):
-
-    # Set the classes for the table
-    classes = ['table', 'table-inverse', 'inlineTable', 'table-condensed']
-
-    id=Col('id')
-    username=Col('username')
-    password=Col('password')
-    email=Col('email')
-    active=Col('active')
-
-    def getUsers():
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM flask_security_user;')
-        conn.close()
-        return result
-
-
 @app.route('/users')
 @login_required
 def users_page():
 
     # Get the table for users:
-    usersTable = UsersTable(UsersTable.getUsers())
+    usersTable = tables.UsersTable(tables.UsersTable.getUsers())
 
     # Set up db to get numerical values
     conn = db.engine.connect()
@@ -261,174 +240,8 @@ def users_page():
     numAdmins = conn.execute('SELECT * FROM getNumFlaskAdmins();').fetchall()[0][0]
     conn.close()
 
-    return render_template('users.html', usersTable=usersTable, 
+    return render_template('users.html', usersTable=usersTable,
         userCount=numUsers, admCount=numAdmins)
-
-
-
-
-
-########################
-## Stores Table Stuff ##
-########################
-
-from flask_table import Table, Col
-  
-class StoresTable(Table):
-    '''Declare the Stores Table
-    This declares the table for stores and their information.
-    It is important to rememebr that each variable declared
-    here counts as a "column" in the table and will be used
-    in the object class of the same type below. It is important
-    that whatever the names of attributes are match up between
-    the table and the "item" which is the "row"
-    '''
-    # Set the classes for the table
-    classes = ['table', 'table-inverse', 'inlineTable', 'table-condensed']
-
-    sid = Col('sid')
-    address = Col('address')
-    city = Col('city')
-    state = Col('state')
-    zip = Col('zip')
-    telno = Col('telno')
-
-    # Get stores tables based on criteria
-    def getStores():
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM stores;')
-        conn.close()
-        return result
-
-    def getStoresZip(zip):
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getStoresZip(\'{0}\');'.format(zip))
-        conn.close()
-        return result;
-
-    def getStoresCity(city):
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getStoresCity(\'{0}\');'.format(city))
-        conn.close()
-        return result;
-
-    def getStoresState(state):
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getStoresState(\'{0}\');'.format(state))
-        conn.close()
-        return result;
-
-    def getStoresID(sid):
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getStoresID({0});'.format(sid))
-        conn.close()
-        return result;
-
-
-    # Averages
-    def getAvgSalAll():
-        '''Get the overall average salary'''
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getAvgSalAll();').first()[0]
-        conn.close()
-        return result
-
-    def getAvgHrlyAll():
-        '''Get the overall average hourly pay'''
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getAvgHrlyAll();').first()[0]
-        conn.close()
-        return result
-
-    def getAvgSalStore(sid):
-        '''Get average salary by store'''
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM avg_salary_store({0});'.format(sid)).first()[0]
-        conn.close()
-        return result
-
-    def getAvgHrlyStore(sid):
-        '''Gets the average salary by store'''
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM avg_hourly_store({0});'.format(sid)).first()[0]
-        conn.close()
-        return result
-
-
-    def getAvgSalZip(zip):
-        '''Get the average salary based on zip'''
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM avg_salary_zip(\'{0}\');'.format(zip)).first()[0]
-        conn.close()
-        return result
-
-    def getAvgHrlyZip(zip):
-        '''Get the average hourly pay based on zip'''
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM avg_hourly_zip(\'{0}\');'.format(zip)).first()[0]
-        conn.close()
-        return result
-
-    def getAvgSalCity(city):
-        '''Get the average salary based on city'''
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM avg_salary_city(\'{0}\');'.format(city)).first()[0]
-        conn.close()
-        return result
-
-    def getAvgHrlyCity(city):
-        '''Get the average hourly pay based on city'''
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM avg_hourly_city(\'{0}\');'.format(city)).first()[0]
-        conn.close()
-        return result
-
-    def getAvgSalState(state):
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM avg_salary_state(\'{0}\');'.format(state)).first()[0]
-        conn.close()
-        return result
-
-    def getAvgHrlyState(state):
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM avg_hourly_state(\'{0}\');'.format(state)).first()[0]
-        conn.close()
-        return result
-
-
-    # Number of employees
-    #----------------------
-    def getNumEmps():
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getNumEmps();').first()[0]
-        conn.close()
-        return result
-
-    def getNumEmpsStore(sid):
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getNumEmpsStore({0});'.format(sid)).first()[0]
-        conn.close()
-        return result
-
-    def getNumEmpsZip(zip):
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getNumEmpsZip(\'{0}\');'.format(zip)).first()[0]
-        conn.close()
-        return result
-
-    def getNumEmpsCity(city):
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getNumEmpsCity(\'{0}\');'.format(city)).first()[0]
-        conn.close()
-        return result
-
-    def getNumEmpsState(state):
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getNumEmpsState(\'{0}\');'.format(state)).first()[0]
-        conn.close()
-        return result
-
-
 
 @app.route('/createStore', methods=['GET', 'POST'])
 @login_required
@@ -460,12 +273,12 @@ def deleteStore():
 def stores_page():
 
     # Generate the stores table
-    storesTable = StoresTable(StoresTable.getStores())
+    storesTable = tables.StoresTable(tables.StoresTable.getStores())
     form = forms.StoreFilterForm()
-    avg_sal= StoresTable.getAvgSalAll()
-    avg_hrly = StoresTable.getAvgHrlyAll()
-    numEmps = StoresTable.getNumEmps()
-    
+    avg_sal= tables.StoresTable.getAvgSalAll()
+    avg_hrly = tables.StoresTable.getAvgHrlyAll()
+    numEmps = tables.StoresTable.getNumEmps()
+
     print('Validation',form.validate())
 
     # Process the form if sent
@@ -479,168 +292,56 @@ def stores_page():
         print(ftype==2)
 
         if ftype == '1':    # By store
-            storesTable = StoresTable(StoresTable.getStoresID(fval))  # Generate table with sid matching fval
+            storesTable = tables.StoresTable(tables.StoresTable.getStoresID(fval))  # Generate table with sid matching fval
 
             # Calculate the averages based on the store sid
-            avg_sal  = StoresTable.getAvgSalStore(fval)
-            avg_hrly = StoresTable.getAvgHrlyStore(fval)
-            numEmps  = StoresTable.getNumEmpsStore(fval)
+            avg_sal  = tables.StoresTable.getAvgSalStore(fval)
+            avg_hrly = tables.StoresTable.getAvgHrlyStore(fval)
+            numEmps  = tables.StoresTable.getNumEmpsStore(fval)
 
         elif ftype == '2':  # By zip
             print('CASE: ZIP')
-            storesTable = StoresTable(StoresTable.getStoresZip(fval))
+            storesTable = tables.StoresTable(tables.StoresTable.getStoresZip(fval))
 
             # Numerics:
-            avg_sal  = StoresTable.getAvgSalZip(fval)
-            avg_hrly = StoresTable.getAvgHrlyZip(fval)
-            numEmps  = StoresTable.getNumEmpsZip(fval)
+            avg_sal  = tables.StoresTable.getAvgSalZip(fval)
+            avg_hrly = tables.StoresTable.getAvgHrlyZip(fval)
+            numEmps  = tables.StoresTable.getNumEmpsZip(fval)
 
         elif ftype == '3':  # By city
-            storesTable = StoresTable(StoresTable.getStoresCity(fval))
+            storesTable = tables.StoresTable(tables.StoresTable.getStoresCity(fval))
 
             # Numerics
-            avg_sal  = StoresTable.getAvgSalCity(fval)
-            avg_hrly = StoresTable.getAvgHrlyCity(fval)
-            numEmps  = StoresTable.getNumEmpsCity(fval)
+            avg_sal  = tables.StoresTable.getAvgSalCity(fval)
+            avg_hrly = tables.StoresTable.getAvgHrlyCity(fval)
+            numEmps  = tables.StoresTable.getNumEmpsCity(fval)
 
         elif ftype == '4':  # By state
-            storesTable = StoresTable(StoresTable.getStoresState(fval))
+            storesTable = tables.StoresTable(tables.StoresTable.getStoresState(fval))
 
-            avg_sal  = StoresTable.getAvgSalState(fval)
-            avg_hrly = StoresTable.getAvgHrlyState(fval)
-            numEmps  = StoresTable.getNumEmpsState(fval)
-        
+            avg_sal  = tables.StoresTable.getAvgSalState(fval)
+            avg_hrly = tables.StoresTable.getAvgHrlyState(fval)
+            numEmps  = tables.StoresTable.getNumEmpsState(fval)
+
         # return render_template(
         #     'stores.html',
         #     form=form,
         #     storesTable=storesTable,
-        #     avg_sal=avg_sal, 
+        #     avg_sal=avg_sal,
         #     avg_hrly=avg_hrly,
         #     numEmps=numEmps
         # )
 
 
-    
+
     return render_template(
         'stores.html',
         form=form,
         storesTable=storesTable,
-        avg_sal=avg_sal, 
+        avg_sal=avg_sal,
         avg_hrly=avg_hrly,
         numEmps=numEmps
     )
-
-
-
-############################
-## Employee Table Builder ##
-## -----Flask_Tables----- ##
-############################
-class EmpTable(Table):
-    '''Table container and generation class for Employees'''
-    
-    # Set the classes for the table
-    classes = ['table', 'table-inverse', 'inlineTable', 'table-condensed']
-
-    eid=Col('eid')
-    firstname=Col('firstname')
-    lastname=Col('lastname')
-    hourly=Col('hourly')
-    pay = Col('pay')
-    roleid=Col('roleid')
-    sid=Col('sid')
-
-    # Whole tables
-    def getEmployees():
-        '''Get the list of all employees'''
-        conn = db.engine.connect()
-        getEmps  = 'SELECT * FROM employees NATURAL JOIN employment order by eid;'
-        result = conn.execute(getEmps)
-        conn.close()
-        return result
-
-    def getEmployeesZip(zip):
-        '''Get employee table filtered by zip'''
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getEmpZip(\'{0}\');'.format(zip))
-        conn.close()
-        return result
-
-    def getEmployeesCity(city):
-        '''Get employee table filtered by city'''
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getEmpCity(\'{0}\');'.format(city))
-        conn.close()
-        return result
-
-    def getEmployeesState(state):
-        '''Get employee table based on state'''
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getEmpState(\'{0}\');'.format(state))
-        conn.close()
-        return result
-
-    def getEmployeesStore(sid):
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getEmpStore({0});'.format(sid))
-        conn.close()
-        return result
-
-    # Averages
-    def getAvgSalAll():
-        '''Get the overall average salary'''
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getAvgSalAll();').first()[0]
-        conn.close()
-        return result
-
-    def getAvgHrlyAll():
-        '''Get the overall average hourly pay'''
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getAvgHrlyAll();').first()[0]
-        conn.close()
-        return result
-
-    def getAvgSalZip(zip):
-        '''Get the average salary based on zip'''
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM avg_sal_zip(\'{0}\');'.format(zip)).first()[0]
-        conn.close()
-        return result
-
-    def getAvgHrlyZip(zip):
-        '''Get the average hourly pay based on zip'''
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM avg_hourly_zip(\'{0}\');'.format(zip)).first()[0]
-        conn.close()
-        return result
-
-    def getAvgSalCity(city):
-        '''Get the average salary based on city'''
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM avg_sal_city(\'{0}\');'.format(city)).first()[0]
-        conn.close()
-        return result
-
-    def getAvgHrlyCity(city):
-        '''Get the average hourly pay based on city'''
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM avg_hourly_city(\'{0})\';'.format(city)).first()[0]
-        conn.close()
-        return result
-
-    def getAvgSalState(state):
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM avg_sal_state(\'{0}\');'.format(state)).first()[0]
-        conn.close()
-        return result
-
-    def getAvgHrlyState(state):
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM avg_hourly_state(\'{0}\');'.format(state)).first()[0]
-        conn.close()
-        return result
-
 
 @app.route('/createEmployee', methods=['GET','POST'])
 @login_required
@@ -651,7 +352,7 @@ def createEmployee():
 
     # otherwise reprint the form
     return render_template(
-        'createEmployee.html', 
+        'createEmployee.html',
         cform=cform
     )
 
@@ -680,169 +381,29 @@ def employees_page():
     hrly_dev = 'Standard Deviation, Hourly:'
 
     # ADD LOGIC BASED ON FORM HERE
-    avg_sal= EmpTable.getAvgSalAll()
-    avg_hrly = EmpTable.getAvgHrlyAll()
+    avg_sal= tables.EmpTable.getAvgSalAll()
+    avg_hrly = tables.EmpTable.getAvgHrlyAll()
 
     # For average salary and hourly for zip, city, state, etc
-    # avg_sal = EmpTable.getAvgSalCirt(city)
-    # avg_hrly = EmpTable.getAvgHrlyCity(city)
+    # avg_sal = tables.EmpTable.getAvgSalCirt(city)
+    # avg_hrly = tables.EmpTable.getAvgHrlyCity(city)
 
     # For the tables based on zip, city, state, etc
-    # empTable = EmpTable(EmpTable.getCity(city))
-    # empTable = EmpTable(EmpTable.getState(state))
+    # empTable = tables.EmpTable(tables.EmpTable.getCity(city))
+    # empTable = tables.EmpTable(tables.EmpTable.getState(state))
 
     # Define the table itself
-    empTable = EmpTable(EmpTable.getEmployees())
+    empTable = tables.EmpTable(tables.EmpTable.getEmployees())
     return render_template(
-        'employees.html', 
+        'employees.html',
         avg_sal_str=avg_sal_str,
-        avg_hourly_str=avg_hourly_str, 
-        sal_dev=sal_dev, 
+        avg_hourly_str=avg_hourly_str,
+        sal_dev=sal_dev,
         hrly_dev=hrly_dev,
-        empTable=empTable, 
-        avg_sal=avg_sal, 
+        empTable=empTable,
+        avg_sal=avg_sal,
         avg_hrly=avg_hrly
     )
-
-
-###################
-## Products Page ##
-###################
-
-class ProductsTable(Table):
-    
-    # Design stuff
-    classes = ['table', 'table-inverse', 'inlineTable', 'table-condensed']
-
-    pid=Col('pid')
-    name=Col('name')
-    color=Col('color')
-    sid=Col('sid')
-
-    def getProducts():
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getProds();')
-        conn.close()
-        return result
-
-    def getProductStore(sid):
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getProdStore({0});'.format(sid))
-        conn.close()
-        return result
-
-    def getProductsZip(zip):
-        conn=db.engine.connect()
-        result = conn.execute('Select * FROM getProdZip(\'{0}\');'.format(zip))
-        conn.close()
-        return result
-
-    def getProductsZip(city):
-        conn=db.engine.connect()
-        result = conn.execute('Select * FROM getProdCity(\'{0}\');'.format(city))
-        conn.close()
-        return result
-
-    def getProductsZip(state):
-        conn=db.engine.connect()
-        result = conn.execute('Select * FROM getProdState(\'{0}\');'.format(state))
-        conn.close()
-        return result
-
-
-    # Averages
-    # These return single value so use .first()[0]
-    def getAvgPrice():
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getAvgPrice();').first()[0]
-        conn.close()
-        return result
-
-    def getAvgPriceZip(zip):
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getAvgPriceZip(\'{0}\');'.format(zip)).first()[0]
-        conn.close()
-        return result
-
-    def getAvgPriceCity(city):
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getAvgPriceCity(\'{0}\');'.format(city)).first()[0]
-        conn.close()
-        return result
-
-    def getAvgPriceState(state):
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getAvgPriceState(\'{0}\');'.format(state)).first()[0]
-        conn.close()
-        return result
-
-    def getAvgPriceStore(sid):
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getAvgPriceStore({0});'.format(sid)).first()[0]
-        conn.close()
-        return result
-
-    # Product count
-    def getNumProducts():
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getNumProds();').first()[0]
-        conn.close()
-        return result
-
-    def getNumProductsStore(sid):
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getNumProdsStore({0});'.format(sid)).first()[0]
-        conn.close()
-        return result
-
-    def getNumProductsZip(zip):
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getNumProdsZip(\'{0}\');'.format(zip)).first()[0]
-        conn.close()
-        return result
-
-    def getNumProductsCity(city):
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getNumProdsCity(\'{0}\');'.format(city)).first()[0]
-        conn.close()
-        return result
-
-    def getNumProductsState(state):
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getNumProdsState(\'{0}\');'.format(state)).first()[0]
-        conn.close()
-        return result
-
-    # Num products on Sale
-    def getNumSale():
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getNumSale();').first()[0]
-        conn.close()
-        return result;
-
-    def getNumSaleStore(sid):
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getNumSaleStore({0});'.format(sid)).first()[0]
-        conn.close()
-        return result
-
-    def getNumSaleZip(zip):
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getNumSaleZip(\'{0}\');'.format(zip)).first()[0]
-        conn.close()
-        return result
-
-    def getNumSaleCity(city):
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getNumSaleCity(\'{0}\');'.format(city)).first()[0]
-        conn.close()
-        return result
-
-    def getNumSaleState(state):
-        conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM getNumSaleState(\'{0}\');'.format(state)).first()[0]
-        conn.close()
-        return result
 
 @app.route('/createProduct', methods=['POST','GET'])
 @login_required
@@ -852,7 +413,7 @@ def createProduct():
         return redirect('/products')
 
     return render_template(
-        '/createProduct.html', 
+        '/createProduct.html',
         form=form
     )
 
@@ -883,17 +444,17 @@ def addExistingProduct():
 @app.route('/products')
 @login_required
 def products_page():
-    
+
     # Generate the table with ALL products
-    productsTable = ProductsTable(ProductsTable.getProducts())
-    avgPrice = ProductsTable.getAvgPrice()
-    numProducts = ProductsTable.getNumProducts()
-    numSale = ProductsTable.getNumSale()
+    productsTable = tables.ProductsTable(tables.ProductsTable.getProducts())
+    avgPrice = tables.ProductsTable.getAvgPrice()
+    numProducts = tables.ProductsTable.getNumProducts()
+    numSale = tables.ProductsTable.getNumSale()
 
     # Logic to reassign based on form
 
     return render_template(
-        'products.html', 
+        'products.html',
         productsTable=productsTable,
         avgPrice=avgPrice,
         numProducts=numProducts,
