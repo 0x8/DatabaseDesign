@@ -315,19 +315,8 @@ $$ LANGUAGE plpgsql;
 
 -- Employee Table Row type as used on our page
 -- Querying of type thanks to: https://levlaz.org/types-and-roles-if-not-exists-in-postgresql/
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'emprow') 
-        THEN 
-            CREATE TYPE EmpRow AS (eid INT, firstname TEXT, lastname TEXT,
-            hourly BOOL, pay NUMERIC, roleid INT, sid INT);
-        ELSE 
-            DROP TYPE EmpRow CASCADE; -- DROPS type and all dependencies (which exist later so get rebuilt anyway)
-            CREATE TYPE EmpRow AS (eid INT, firstname TEXT, lastname TEXT,
-            hourly BOOL, pay NUMERIC, roleid INT, sid INT);
-    END IF;
-END;
-$$;
+CREATE TYPE EmpRow AS (eid INT, firstname TEXT, lastname TEXT,
+                       hourly BOOL, pay NUMERIC, roleid INT, sid INT);
 
 -- Get Employees by zip
 CREATE OR REPLACE FUNCTION getEmpZip(zip TEXT) RETURNS
@@ -479,19 +468,8 @@ $$ LANGUAGE plpgsql;
 
 -- Store Table Row type as used on our page
 -- Querying of type thanks to: https://levlaz.org/types-and-roles-if-not-exists-in-postgresql/
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'storerow') 
-        THEN 
-            CREATE TYPE StoreRow AS (sid INT, address TEXT, city TEXT, 
-                state TEXT, zip TEXT, telno TEXT);
-        ELSE 
-            DROP TYPE storerow CASCADE; 
-            CREATE TYPE StoreRow AS (sid INT, address TEXT, city TEXT, 
-                state TEXT, zip TEXT, telno TEXT);
-    END IF;
-END;
-$$;
+CREATE TYPE StoreRow AS (sid INT, address TEXT, city TEXT,
+                         state TEXT, zip TEXT, telno TEXT);
 
 -- Get Store by zip
 CREATE OR REPLACE FUNCTION getStoresZip(zip TEXT) RETURNS
@@ -534,17 +512,7 @@ $$ LANGUAGE 'sql' STABLE;
 
 -- Product Table Row type as used on our page
 -- Querying of type thanks to: https://levlaz.org/types-and-roles-if-not-exists-in-postgresql/
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'prodrow') 
-        THEN 
-            CREATE TYPE ProdRow AS (pid INT, name TEXT, color TEXT, sid INT);
-        ELSE 
-            DROP TYPE prodrow CASCADE; 
-            CREATE TYPE ProdRow AS (pid INT, name TEXT, color TEXT, sid INT);
-    END IF;
-END;
-$$;
+CREATE TYPE ProdRow AS (pid INT, name TEXT, color TEXT, sid INT);
 
 -- ALL
 CREATE OR REPLACE FUNCTION getProds() RETURNS
