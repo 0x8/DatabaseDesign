@@ -18,19 +18,23 @@ Silkroad Employee Management
   </script>
 
 	<section id="Body">
-		<h2>Employees</h2>
-		<p>This page contains information about employees.
-		   Employees can be filtered by State, City, or Zip
-		   and metrics will change to reflect that.
-		</p>
-		<hr></hr>
-		<h2> Overview Summary: </h2>
-		<h3>
-			<p><strong>{{ avg_sal_str }}</strong>    {{ avg_sal }}</p>
-			<p><strong>{{ avg_hourly_str }}</strong>    {{ avg_hrly }}</p>
-		</h3>
 
-		<hr></hr>
+	<h2>Employees</h2>
+
+	<p>This page contains information about employees.
+	   Employees can be filtered by State, City, or Zip
+	   and metrics will change to reflect that.
+	</p>
+
+	<hr></hr>
+
+	<h2> Overview Summary: </h2>
+	<h3>
+		<p><strong>{{ avg_sal_str }}</strong>    {{ avg_sal }}</p>
+		<p><strong>{{ avg_hourly_str }}</strong>    {{ avg_hrly }}</p>
+	</h3>
+
+	<hr></hr>
 
 		<!-- Search menu and input field -->
   <form method="/employees">

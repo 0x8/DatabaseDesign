@@ -271,7 +271,7 @@ def dbusertest():
 ## WTForms for DB Insertion ##
 ##############################
 
-from wtforms import FloatField, IntegerField, SelectField
+from wtforms import FloatField, IntegerField, SelectField, SubmitField
 
 # Employee Creation
 class EmpCreate(Form):
@@ -288,7 +288,12 @@ class EmpCreate(Form):
         ('3','Stocker'),('4','Human Resources'),('5','Information Technology')], 
          validators=[Required()])
     sid       = IntegerField('Store ID', validators=[Required()])
+    submit    = SubmitField('Create')
 
+    # This function gets called automatically on submission
+    # I believe so it can be used to run the insertions.
+    # def validate(self):
+    # pass
 
 
 #########################
@@ -509,7 +514,8 @@ def stores_page():
         storesTable=storesTable,
         avg_sal=avg_sal, 
         avg_hrly=avg_hrly,
-        numEmps=numEmps)
+        numEmps=numEmps
+    )
 
 
 
@@ -623,7 +629,7 @@ class EmpTable(Table):
         return result
 
 
-@app.route('/createEmployee')
+@app.route('/createEmployee', methods=['GET','POST'])
 @login_required
 def createEmployee():
     cform = EmpCreate()
