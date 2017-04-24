@@ -685,10 +685,25 @@ class StoresTable(Table):
         conn.close()
         return result
 
+    def getAvgSalStore(sid):
+        '''Get average salary by store'''
+        conn = db.engine.connect()
+        result = conn.execute('SELECT * FROM avg_salary_store({0});'.format(sid)).first()[0]
+        conn.close()
+        return result
+
+    def getAvgHrlyStore(sid):
+        '''Gets the average salary by store'''
+        conn = db.engine.connect()
+        result = conn.execute('SELECT * FROM avg_hourly_store({0});'.format(sid)).first()[0]
+        conn.close()
+        return result
+
+
     def getAvgSalZip(zip):
         '''Get the average salary based on zip'''
         conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM avg_sal_zip(\'{0}\');'.format(zip)).first()[0]
+        result = conn.execute('SELECT * FROM avg_salary_zip(\'{0}\');'.format(zip)).first()[0]
         conn.close()
         return result
 
@@ -702,20 +717,20 @@ class StoresTable(Table):
     def getAvgSalCity(city):
         '''Get the average salary based on city'''
         conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM avg_sal_city(\'{0}\');'.format(city)).first()[0]
+        result = conn.execute('SELECT * FROM avg_salary_city(\'{0}\');'.format(city)).first()[0]
         conn.close()
         return result
 
     def getAvgHrlyCity(city):
         '''Get the average hourly pay based on city'''
         conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM avg_hourly_city(\'{0})\';'.format(city)).first()[0]
+        result = conn.execute('SELECT * FROM avg_hourly_city(\'{0}\');'.format(city)).first()[0]
         conn.close()
         return result
 
     def getAvgSalState(state):
         conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM avg_sal_state(\'{0}\');'.format(state)).first()[0]
+        result = conn.execute('SELECT * FROM avg_salary_state(\'{0}\');'.format(state)).first()[0]
         conn.close()
         return result
 
@@ -758,6 +773,27 @@ class StoresTable(Table):
         conn.close()
         return result
 
+
+# Form to filter results based on criteria
+class StoreFilterForm(Form):
+    searchChoices = [
+        (0,'Filter type ▼'),
+        (1,'Filter by Store'),
+        (2,'Filter by Zip'),
+        (3,'Filter by City'),
+        (4,'Filter by State')
+    ]
+    filterType = SelectField(
+                    'Choose a search type', 
+                    choices=searchChoices, 
+                    coerce=int, 
+                    validators=[Required()]
+                )
+    filterVal = StringField(validators=[Required()])
+    submit = SubmitField('Filter')
+
+
+
 @app.route('/createStore', methods=['GET', 'POST'])
 @login_required
 def createNewStore():
@@ -783,19 +819,75 @@ def deleteStore():
     )
 
 
-@app.route('/stores')
+@app.route('/stores', methods=['GET','POST'])
 @login_required
 def stores_page():
 
     # Generate the stores table
     storesTable = StoresTable(StoresTable.getStores())
+    form = StoreFilterForm()
     avg_sal= StoresTable.getAvgSalAll()
     avg_hrly = StoresTable.getAvgHrlyAll()
     numEmps = StoresTable.getNumEmps()
-    # TODO A bit of logic to handle queries:
+    
+    print('Validation',form.validate())
+
+    # Process the form if sent
+    if request.method == 'POST' and form.validate():
+        ftype = request.form.get('filterType')
+        fval  = request.form.get('filterVal')
+
+        print('ftype:',ftype)
+        print('fval', fval)
+        print(type(ftype))
+        print(ftype==2)
+
+        if ftype == '1':    # By store
+            storesTable = StoresTable(StoresTable.getStoresID(fval))  # Generate table with sid matching fval
+
+            # Calculate the averages based on the store sid
+            avg_sal  = StoresTable.getAvgSalStore(fval)
+            avg_hrly = StoresTable.getAvgHrlyStore(fval)
+            numEmps  = StoresTable.getNumEmpsStore(fval)
+
+        elif ftype == '2':  # By zip
+            print('CASE: ZIP')
+            storesTable = StoresTable(StoresTable.getStoresZip(fval))
+
+            # Numerics:
+            avg_sal  = StoresTable.getAvgSalZip(fval)
+            avg_hrly = StoresTable.getAvgHrlyZip(fval)
+            numEmps  = StoresTable.getNumEmpsZip(fval)
+
+        elif ftype == '3':  # By city
+            storesTable = StoresTable(StoresTable.getStoresCity(fval))
+
+            # Numerics
+            avg_sal  = StoresTable.getAvgSalCity(fval)
+            avg_hrly = StoresTable.getAvgHrlyCity(fval)
+            numEmps  = StoresTable.getNumEmpsCity(fval)
+
+        elif ftype == '4':  # By state
+            storesTable = StoresTable(StoresTable.getStoresState(fval))
+
+            avg_sal  = StoresTable.getAvgSalState(fval)
+            avg_hrly = StoresTable.getAvgHrlyState(fval)
+            numEmps  = StoresTable.getNumEmpsState(fval)
+        
+        # return render_template(
+        #     'stores.html',
+        #     form=form,
+        #     storesTable=storesTable,
+        #     avg_sal=avg_sal, 
+        #     avg_hrly=avg_hrly,
+        #     numEmps=numEmps
+        # )
+
+
     
     return render_template(
-        'stores.html', 
+        'stores.html',
+        form=form,
         storesTable=storesTable,
         avg_sal=avg_sal, 
         avg_hrly=avg_hrly,
@@ -1178,12 +1270,47 @@ def products_page():
 ## Custom Forms for buttons ##
 ##############################
 
+class TestForm(Form):
+    searchChoices = [
+        (0,'Filter type ▼'),
+        (1,'Filter by Store'),
+        (2,'Filter by Zip'),
+        (3,'Filter by City'),
+        (4,'Filter by State')
+    ]
+    searchType = SelectField(
+                    'Choose a search type', 
+                    choices=searchChoices, 
+                    coerce=int, 
+                    validators=[Required()]
+                )
+    searchVal  = StringField(validators=[Required()])
+    submit = SubmitField('Filter')
+
 
 # TESTING something
 @app.route('/redir')
 @login_required
 def redir():
     return redirect('/')
+
+@app.route('/testing',methods=['GET','POST'])
+def testing():
+    print(request)
+    print(type(request))
+    form = TestForm()
+
+    if request.method=='POST' and form.validate():
+        session['testvar'] = request.form.get('searchType')
+        session['testvarval'] = request.form.get('searchVal')
+        print(session)
+        print(session['testvar'])
+        print(session['testvarval'])
+
+    return render_template(
+        'testing.html',
+        form=form
+    )
 
 @app.route('/acknowledgements', methods=['GET'])
 def acknowledgements():
