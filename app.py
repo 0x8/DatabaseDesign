@@ -192,6 +192,11 @@ class extendedRegisterForm(RegisterForm):
 user_datastore = SQLAlchemyUserDatastore(db, User, UserRole)
 security = Security(app, user_datastore, login_form=extendedLoginForm, register_form=extendedRegisterForm)
 
+admin_role = user_datastore.create_role(
+    name='admin',
+    description='Administrator'
+)
+
 # Make sure flask-security doesn't send any mail
 @security.send_mail_task
 def dont_send_mail_hack(msg):
@@ -211,25 +216,6 @@ def security_register_processor():
 ######################
 # CLICK CLI COMMANDS #
 ######################
-
-# Creating a user to test authentication with
-@app.cli.command('make-admin')
-def create_admin():
-    admin = user_datastore.create_user(
-        username='nullp0inter',
-        email='iguibas@mail.usf.edu',
-        password='_Hunter2',
-        active=True
-    )
-
-    admin_role = user_datastore.create_role(
-        name='admin',
-        description='Administrator'
-    )
-
-    user_datastore.add_role_to_user(admin, admin_role)
-    db.session.commit()
-
 
 @app.cli.command('initdb')
 @click.argument('number', default=20)
@@ -258,6 +244,34 @@ def initdb(number):
             email=userdict['email'],
             password=userdict['password'],
             active=True)
+
+    # Make a few users that we know will always exist
+    user_datastore.add_role_to_user(
+        user_datastore.create_user(
+            username='nullp0inter',
+            email='iguibas@mail.usf.edu',
+            password='_Hunter2',
+            active=True
+        ),
+        admin_role
+    )
+
+    user_datastore.add_role_to_user(
+        user_datastore.create_user(
+            username='admin',
+            email='admin@example.com',
+            password='password',
+            active=True
+        ),
+        admin_role
+    )
+
+    user_datastore.create_user(
+        username='user',
+        email='user@example.com',
+        password='password',
+        active=True
+    )
 
     db.session.commit()
     print('Database initialized')
