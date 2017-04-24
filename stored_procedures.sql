@@ -2,6 +2,9 @@
 -- Kevin Orr
 -- Project 4 Stored Procedures and queries
 
+-- We have made HEAVY use of the online postgres documentation
+-- located here: https://www.postgresql.org/
+
 -- Create the language in which the procedures 
 -- are written in the database
 -- This need only be run once ever so leave it commented if you've
@@ -814,5 +817,99 @@ BEGIN
         THEN RETURN numSale;
         ELSE RETURN 0;
     END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- Add employee:
+CREATE OR REPLACE FUNCTION createEmp(fname TEXT, lname TEXT, 
+hourly BOOL, pay NUMERIC, roleid INT, sid Int ) RETURNS VOID AS $$
+DECLARE
+    id int;
+BEGIN
+    
+    -- Get a unique id for the newly created employee
+    SELECT INTO id MAX(E.eid)+1 FROM Employees E;
+
+    -- Insert into the employee table
+    INSERT INTO Employees (eid, firstname, lastname, hourly, pay, roleid)
+    VALUES (id,$1,$2,$3,$4,$5);
+
+    -- Insert into the assigned store
+    INSERT INTO Employment (eid, sid)
+    VALUES (id, $6);
+
+END;
+$$ LANGUAGE plpgsql;
+
+-- Delete Employee
+CREATE OR REPLACE FUNCTION delEmp(eid INT) RETURNS VOID AS $$
+BEGIN
+    DELETE FROM Employees WHERE Employees.eid=$1;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+--- Products
+-- Create new product
+CREATE OR REPLACE FUNCTION createNewProd(name TEXT, color TEXT, sid INT, price NUMERIC, qty INT, sale BOOL)
+RETURNS VOID AS $$
+DECLARE
+    pid INT := 0;
+BEGIN
+
+    -- Select a new pid
+    SELECT INTO pid MAX(P.pid)+1 FROM Products P;
+
+    INSERT INTO Products (pid, name, color)
+    VALUES (pid, $1, $2);
+
+    INSERT INTO Inventory (pid, sid, price, stock, special)
+    VALUES (pid, $3, $4, $5, $6);
+
+END;
+$$ LANGUAGE plpgsql;
+
+-- Add existing product inventory relation
+CREATE OR REPLACE FUNCTION addExistingProd(pid INT, sid INT, price NUMERIC, qty INT, sale BOOL)
+RETURNS VOID AS $$
+BEGIN
+    -- If the product already exists for the store, alter its other values
+    IF EXISTS (SELECT 1 
+               FROM Inventory I
+               WHERE I.pid=$1
+               AND I.sid=$2)
+        THEN UPDATE Inventory I
+             SET price=$3,
+                 stock=$4,
+                 sale =$5
+             WHERE I.pid=$1
+             AND I.sid=$2;
+        ELSE
+            INSERT INTO Inventory (pid, sid, price, stock, sale)
+            VALUES ($1, $2, $3, $4, $5);
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create a new store
+CREATE OR REPLACE FUNCTION addStore(address TEXT, city TEXT, state TEXT,
+zip TEXT, telno TEXT, managerID INT) RETURNS VOID AS $$
+DECLARE
+    sid int := 0;
+BEGIN
+    
+    -- Get unique valid SID
+    SELECT INTO sid MAX(S.sid)+1 FROM Stores S;
+
+    -- Do the store table insertion
+    INSERT INTO Stores (sid, address, city, state, zip, telno)
+    VALUES (sid, $1, $2, $3, $4, $5);
+
+    -- Do the Employment Entry adding the manager to this store
+    INSERT INTO Employment (sid, eid)
+    VALUES (sid, $6);
+
 END;
 $$ LANGUAGE plpgsql;
