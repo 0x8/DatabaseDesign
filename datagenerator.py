@@ -194,9 +194,18 @@ def make_employment(n, employees, stores, verbosity=False):
         eid = random.choice(employees)[0]
         employment_list.append((store[0], eid))
 
-    for j in range(i+1, n+1):
+    # Make sure each employee has at least one store
+    for j, employee in enumerate(employees):
         if verbosity:
-            sys.stdout.write('\r{}/{} employments'.format(i+1, n))
+            sys.stdout.write('\r{}/{} employments'.format(i+j+2, n))
+
+        sid = random.choice(stores)[0]
+        employment_list.append((sid, employee[0]))
+
+    # Make the rest of the n relationships
+    for k in range(i+j+2, n+1):
+        if verbosity:
+            sys.stdout.write('\r{}/{} employments'.format(k+1, n))
 
         sid = random.choice(stores)[0]
         eid = random.choice(employees)[0]
