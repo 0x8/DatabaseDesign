@@ -1,0 +1,22 @@
+{% extends 'layouts/layout1.html' %}
+{% from "security/_macros.html" import render_field_with_errors, render_field %}
+
+{% block title %}
+Product Deletion
+{% endblock %}
+
+{% block content %}
+<div class="container">
+	<section id="Body">
+		<h2> Product Deletion Page </h2>
+		<p> This page allows deleting a product based on its ID </p>
+		<hr></hr>
+
+		<form method="POST" action="/createProduct">
+			{{ form.csrf_token }}
+			<div>{{ render_field_with_errors(form.pid) }}</div>
+			<div>{{ render_field(form.submit)		   }}</div>
+		</form>
+	</section>
+</div>
+{% endblock %}

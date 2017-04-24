@@ -1,23 +1,29 @@
 {% extends 'layouts/layout1.html' %}
+{% from "security/_macros.html" import render_field_with_errors, render_field %}
+
+{% block title %}
+Create Employee
+{% endblock %}
 
 {% block content %}
-	
 	<div class='container'>
-		<h2> Employee Creation Page </h2>
-		<p> Enter the requested information below to create a new employee in the database </p>
-		<hr></hr>
+		<section id="Body">
+			<h2> Employee Creation Page </h2>
+			<p> Enter the requested information below to create a new employee in the database </p>
+			<hr></hr>
 
-		<!-- WTForms requires being decently verbose about fields 
-			 and containing them within their own div tags        -->
-		<form method='POST' action='/createEmployee'>
-			<div>{{ cform.firstname.label }}: {{ cform.firstname }}</div>
-			<div>{{ cform.lastname.label  }}: {{ cform.lastname  }}</div>
-			<div>{{ cform.hourly.label    }}: {{ cform.hourly    }}</div>
-			<div>{{ cform.pay.label       }}: {{ cform.pay       }}</div>
-			<div>{{ cform.roleid.label    }}: {{ cform.roleid    }}</div>
-			<div>{{ cform.sid.label       }}: {{ cform.sid       }}</div>
-			<div>{{ cform.submit.label    }}: {{ cform.submit    }}</div>
-		</form>
+			<form method='POST' action='/createEmployee'>
+				 <!-- This hidden tag is anti CSRF and required -->
+				{{ cform.csrf_token }}
+				<div>{{ render_field_with_errors(cform.firstname)    }}</div>
+				<div>{{ render_field_with_errors(cform.lastname)     }}</div>
+				<div>{{ render_field_with_errors(cform.hourly)       }}</div>
+				<div>{{ render_field_with_errors(cform.pay) 	     }}</div>
+				<div>{{ render_field_with_errors(cform.roleid)		 }}</div>
+				<div>{{ render_field_with_errors(cform.sid)		 	 }}</div>
+				<div>{{ render_field(cform.submit) }}</div>
+			</form>
+		</section>
 	</div>
 
 {% endblock %}
