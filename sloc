@@ -3,4 +3,16 @@
 shopt -s globstar
 shopt -s nullglob
 
-cat *.py schema.sql {templates,static}/**/*.{html,css,js} | wc -l
+python="app.py appconfig.py datagenerator.py forms.py tables.py"
+sql="schema.sql stored_procedures.sql"
+templates="templates/*.html"
+
+python_sloc="$(cat $python | wc -l)"
+sql_sloc="$(cat $sql | wc -l)"
+template_sloc="$(cat $templates | wc -l)"
+total_sloc=$(($python_sloc + $sql_sloc + $template_sloc))
+
+echo "Python: $python_sloc"
+echo "SQL: $sql_sloc"
+echo "templates: $template_sloc"
+echo "total: $total_sloc"
