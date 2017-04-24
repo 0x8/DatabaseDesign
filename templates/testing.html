@@ -1,0 +1,95 @@
+{% extends 'layouts/layout1.html' %}
+{% from "security/_macros.html" import render_field_with_errors, render_field %}
+
+{% block content %}
+<div class="container">
+<section id="Body">
+  <div class="container">
+  <script type="text/javascript">
+      $(document).ready(function(){
+          $('#query-type-selector input').on('click', function(event){
+              $('#query-type-selection')[0].textContent = event.target.value;
+              $('#hidden-query-type')[0].value = event.target.dataset.queryType;
+              $('#query-type-selector').click();
+          });
+      });
+  </script>
+
+	<section id="Body">
+
+	<h2>Testing Page</h2>
+
+	<hr></hr>
+
+	<h2> Overview Summary: </h2>
+	<h3>
+		<p><strong>{{ avg_sal_str }}</strong>    {{ avg_sal }}</p>
+		<p><strong>{{ avg_hourly_str }}</strong>    {{ avg_hrly }}</p>
+	</h3>
+
+	<hr></hr>
+
+<!-- Search menu and input field -->
+<form method="POST">
+	<div class="row">
+		<div class="col-lg-6">
+			<div class="input-group">
+				
+				<div class="input-group-btn">
+					<input type="hidden" name="query_type" id="hidden-query-type"/>
+					<button class="btn btn-primary dropdown-toggle" id="query-type-selection"
+					data-toggle="dropdown" aria-haspopup="true"
+					aria-expanded="flase"> Select search type
+					      <span class="caret"></span>
+					</button>
+					
+					<ul class="dropdown-menu" id="query-type-selector" >
+						<li><input type="button" style="width:100%"
+					     	class="btn btn-primary" id='search_byStore'
+					     	value="Search By Store" data-query-type="store" />
+						</li>
+					    <li>
+							<input type="button" style="width:100%"
+					     	class="btn btn-primary" id='search_byState'
+					     	value="Search by State" data-query-type="state">
+						</li>
+					    <li><input type="button" style="width:100%"
+					  		class="btn btn-primary" id='search_byCity'
+					    	value="Search by City" data-query-type="city">
+						</li>
+					    <li><input type="button" style="width:100%"
+					    	class="btn btn-primary" id='search_byZip'
+					    	value="Search by Zip" data-query-type="zip">
+						</li>
+					</ul>
+
+				</div>
+
+				<input type="text" class="form-control" id="sortKey" name="sort_key" />
+			</div>
+		</div>
+		<input type="submit" id="GO" class="btn btn-primary" />
+	</div>
+</form>
+
+<hr>
+
+<form method="POST" action="/testing" class="form-inline">
+	{{ form.csrf_token }}
+	<div class="input-group">
+		<div class="form-group">
+			{{ form.searchType(class="btn btn-primary dropdown-toggle form-control")|safe }}
+		</div>
+		<div class="form-group">
+			{{ render_field(form.searchVal, class="form-control") }}
+		</div>
+		<div class="form-group">
+			{{ render_field(form.submit, class="btn btn-primary form-control") }}
+		</div>
+	</div>
+</form> 
+
+
+	</section>
+</div>
+{% endblock %}
