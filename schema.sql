@@ -23,10 +23,10 @@ CREATE TABLE Suppliers (
 );
 
 CREATE TABLE Supplies (
-    pid INTEGER NOT NULL REFERENCES Products (pid),
+    pid INTEGER NOT NULL REFERENCES Products (pid) ON DELETE CASCADE,
     cost NUMERIC NOT NULL CHECK (cost >= 0),
     qty INTEGER NOT NULL CHECK (qty > 0),
-    supid INTEGER NOT NULL REFERENCES Suppliers (supid)
+    supid INTEGER NOT NULL REFERENCES Suppliers (supid) ON DELETE CASCADE
 );
 
 -- Stores
@@ -40,8 +40,8 @@ CREATE TABLE Stores (
 );
 
 CREATE TABLE Inventory (
-    sid INTEGER NOT NULL REFERENCES Stores (sid),
-    pid INTEGER NOT NULL REFERENCES Products (pid),
+    sid INTEGER NOT NULL REFERENCES Stores (sid) ON DELETE CASCADE,
+    pid INTEGER NOT NULL REFERENCES Products (pid) ON DELETE CASCADE,
     price NUMERIC NOT NULL CHECK (price >= 0),
     stock INTEGER NOT NULL CHECK (stock >= 0),
     special BOOL NOT NULL
@@ -59,10 +59,10 @@ CREATE TABLE Employees (
     lastname TEXT NOT NULL,
     hourly BOOL NOT NULL,
     pay NUMERIC NOT NULL CHECK (pay >= 0),
-    roleid INTEGER NOT NULL REFERENCES Roles (roleid)
+    roleid INTEGER NOT NULL REFERENCES Roles (roleid) ON DELETE CASCADE
 );
 
 CREATE TABLE Employment (
-    sid INTEGER NOT NULL REFERENCES Stores (sid),
-    eid INTEGER NOT NULL REFERENCES Employees (eid)
+    sid INTEGER NOT NULL REFERENCES Stores (sid) ON DELETE CASCADE,
+    eid INTEGER NOT NULL REFERENCES Employees (eid) ON DELETE CASCADE
 );
