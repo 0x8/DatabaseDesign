@@ -246,7 +246,7 @@ def users_page():
 @app.route('/createStore', methods=['GET', 'POST'])
 @login_required
 def createNewStore():
-    form = forms.StoreCreateForm()
+    form = forms.StoreCreateForm(request.form)
     if request.method == 'POST' and form.validate():
         return redirect('/stores')
 
@@ -258,7 +258,7 @@ def createNewStore():
 @app.route('/deleteStore', methods=['GET','POST'])
 @login_required
 def deleteStore():
-    form = forms.StoreDeleteForm()
+    form = forms.StoreDeleteForm(request.form)
     if request.method == 'POST' and form.validate():
         return redirect('/stores')
 
@@ -274,7 +274,7 @@ def stores_page():
 
     # Generate the stores table
     storesTable = tables.StoresTable(tables.StoresTable.getStores())
-    form = forms.StoreFilterForm()
+    form = forms.StoreFilterForm(request.form)
     avg_sal= tables.StoresTable.getAvgSalAll()
     avg_hrly = tables.StoresTable.getAvgHrlyAll()
     numEmps = tables.StoresTable.getNumEmps()
@@ -346,7 +346,7 @@ def stores_page():
 @app.route('/createEmployee', methods=['GET','POST'])
 @login_required
 def createEmployee():
-    cform = forms.EmpCreateForm(csrf_enabled=True)
+    cform = forms.EmpCreateForm(request.form, csrf_enabled=True)
     if request.method == 'POST' and cform.validate():
         return redirect('/employees')
 
@@ -359,7 +359,7 @@ def createEmployee():
 @app.route('/deleteEmployee', methods=['GET','POST'])
 @login_required
 def deleteEmployee():
-    form = forms.EmpDeleteForm()
+    form = forms.EmpDeleteForm(request.form)
     if request.method == 'POST' and form.validate():
         # Return to employees
         return redirect('/employees')
@@ -408,7 +408,7 @@ def employees_page():
 @app.route('/createProduct', methods=['POST','GET'])
 @login_required
 def createProduct():
-    form = forms.ProdCreateForm()
+    form = forms.ProdCreateForm(request.form)
     if request.method == "POST" and form.validate():
         return redirect('/products')
 
@@ -420,7 +420,7 @@ def createProduct():
 @app.route('/deleteProduct', methods=['GET','POST'])
 @login_required
 def deleteProduct():
-    form = forms.ProdDeleteForm()
+    form = forms.ProdDeleteForm(request.form)
     if request.method == 'POST' and form.validate():
         return redirect('/products')
 
@@ -432,7 +432,7 @@ def deleteProduct():
 @app.route('/addExistingProduct', methods=['GET','POST'])
 @login_required
 def addExistingProduct():
-    form = forms.ProdAddExistingForm()
+    form = forms.ProdAddExistingForm(request.form)
     if request.method == 'POST' and form.validate():
         return redirect('/products')
 
@@ -473,7 +473,7 @@ def redir():
 def testing():
     print(request)
     print(type(request))
-    form = forms.TestForm()
+    form = forms.TestForm(request.form)
 
     if request.method=='POST' and form.validate():
         session['testvar'] = request.form.get('searchType')
