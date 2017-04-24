@@ -49,8 +49,67 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+-- Average salary by store
+CREATE OR REPLACE FUNCTION avg_salary_store(sid INT) RETURNS FLOAT AS $$
+DECLARE
+    avg_sal float := 0.0;
+BEGIN
+    
+    IF NOT EXISTS
+        (SELECT 1
+         FROM Stores
+         WHERE Stores.sid=$1)
+        THEN RETURN -1.0;
+
+    ELSE
+
+        SELECT INTO avg_sal ROUND(AVG(E.pay),2)
+        FROM Employees E, Employment Emp
+        WHERE  E.eid=Emp.eid
+        AND Emp.sid=$1
+        AND E.hourly='False';
+
+        IF avg_sal IS NOT NULL
+            THEN RETURN avg_sal;
+            ELSE RETURN -1.0;
+        END IF;
+
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Average hourly by store
+CREATE OR REPLACE FUNCTION avg_hourly_store(sid INT) RETURNS FLOAT AS $$
+DECLARE
+    avg_sal float := 0.0;
+BEGIN
+    
+    IF NOT EXISTS
+        (SELECT 1
+         FROM Stores
+         WHERE Stores.sid=$1)
+        THEN RETURN -1.0;
+
+    ELSE
+
+        SELECT INTO avg_sal ROUND(AVG(E.pay),2)
+        FROM Employees E, Employment Emp
+        WHERE  E.eid=Emp.eid
+        AND Emp.sid=$1
+        AND E.hourly='True';
+
+        IF avg_sal IS NOT NULL
+            THEN RETURN avg_sal;
+            ELSE RETURN -1.0;
+        END IF;
+
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+
 -- Compile the average salary for a given zip code
-CREATE OR REPLACE FUNCTION avg_sal_zip (zip TEXT) RETURNS FLOAT AS $$
+CREATE OR REPLACE FUNCTION avg_salary_zip (zip TEXT) RETURNS FLOAT AS $$
 DECLARE
 	sal_avg float := 0.0;
 BEGIN
@@ -211,7 +270,7 @@ BEGIN
 
         SELECT INTO state_hourly_avg ROUND(AVG(E.pay),2)
         FROM Employment Emp, Employees E, Stores S
-        WHERE Emp.sid=Store.sid AND Emp.eid=E.eid AND LOWER(S.state)=LOWER($1)
+        WHERE Emp.sid=S.sid AND Emp.eid=E.eid AND LOWER(S.state)=LOWER($1)
               AND E.hourly='False';
 
         IF state_hourly_avg IS NOT NULL
