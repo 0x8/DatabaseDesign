@@ -562,6 +562,10 @@ class StoreDelete(Form):
 ## Routing Definitions ##
 #########################
 
+@app.route('/favicon.ico')
+def favicon():
+    return app.send_static_file('img/favicon.ico')
+
 @app.route('/profile/<username>')
 def profile(username):
     user = User.query.filter_by(username=username).first()
