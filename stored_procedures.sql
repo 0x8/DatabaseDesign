@@ -271,7 +271,7 @@ BEGIN
         SELECT INTO state_hourly_avg ROUND(AVG(E.pay),2)
         FROM Employment Emp, Employees E, Stores S
         WHERE Emp.sid=S.sid AND Emp.eid=E.eid AND LOWER(S.state)=LOWER($1)
-              AND E.hourly='False';
+              AND E.hourly='True';
 
         IF state_hourly_avg IS NOT NULL
             THEN RETURN state_hourly_avg;
