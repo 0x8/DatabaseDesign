@@ -293,64 +293,60 @@ def stores_page():
     avg_hrly = tables.StoresTable.getAvgHrlyAll()
     numEmps = tables.StoresTable.getNumEmps()
 
-    print('Validation',form.validate())
+    filType='None'
+    filVal='ALL'
 
     # Process the form if sent
     if request.method == 'POST' and form.validate():
         ftype = request.form.get('filterType')
         fval  = request.form.get('filterVal')
 
-        print('ftype:',ftype)
-        print('fval', fval)
-        print(type(ftype))
-        print(ftype==2)
-
         if ftype == '1':    # By store
-            storesTable = tables.StoresTable(tables.StoresTable.getStoresID(fval))  # Generate table with sid matching fval
 
-            # Calculate the averages based on the store sid
+            filType='Store ID'
+            filVal=fval
+
+            storesTable = tables.StoresTable(tables.StoresTable.getStoresID(fval))  # Generate table with sid matching fval
             avg_sal  = tables.StoresTable.getAvgSalStore(fval)
             avg_hrly = tables.StoresTable.getAvgHrlyStore(fval)
             numEmps  = tables.StoresTable.getNumEmpsStore(fval)
 
         elif ftype == '2':  # By zip
-            print('CASE: ZIP')
-            storesTable = tables.StoresTable(tables.StoresTable.getStoresZip(fval))
 
-            # Numerics:
+            filType='Zip'
+            filVal=fval
+
+            storesTable = tables.StoresTable(tables.StoresTable.getStoresZip(fval))
             avg_sal  = tables.StoresTable.getAvgSalZip(fval)
             avg_hrly = tables.StoresTable.getAvgHrlyZip(fval)
             numEmps  = tables.StoresTable.getNumEmpsZip(fval)
 
         elif ftype == '3':  # By city
-            storesTable = tables.StoresTable(tables.StoresTable.getStoresCity(fval))
+            
+            filType='City'
+            filVal=fval
 
-            # Numerics
+            storesTable = tables.StoresTable(tables.StoresTable.getStoresCity(fval))
             avg_sal  = tables.StoresTable.getAvgSalCity(fval)
             avg_hrly = tables.StoresTable.getAvgHrlyCity(fval)
             numEmps  = tables.StoresTable.getNumEmpsCity(fval)
 
         elif ftype == '4':  # By state
-            storesTable = tables.StoresTable(tables.StoresTable.getStoresState(fval))
+            
+            filType='State'
+            filVal=fval
 
+            storesTable = tables.StoresTable(tables.StoresTable.getStoresState(fval))
             avg_sal  = tables.StoresTable.getAvgSalState(fval)
             avg_hrly = tables.StoresTable.getAvgHrlyState(fval)
             numEmps  = tables.StoresTable.getNumEmpsState(fval)
-
-        # return render_template(
-        #     'stores.html',
-        #     form=form,
-        #     storesTable=storesTable,
-        #     avg_sal=avg_sal,
-        #     avg_hrly=avg_hrly,
-        #     numEmps=numEmps
-        # )
-
 
 
     return render_template(
         'stores.html',
         form=form,
+        filType=filType,
+        filVal=filVal,
         storesTable=storesTable,
         avg_sal=avg_sal,
         avg_hrly=avg_hrly,
@@ -392,6 +388,9 @@ def employees_page():
     avg_sal_str = 'Average Salary Pay:'
     avg_hourly_str = 'Average Hourly Pay:'
 
+    filType = 'None'
+    filVal = 'ALL'
+
     # ADD LOGIC BASED ON FORM HERE
     avg_sal= tables.EmpTable.getAvgSalAll()
     avg_hrly = tables.EmpTable.getAvgHrlyAll()
@@ -409,11 +408,17 @@ def employees_page():
 
         if ftype == '1':  # Store
             
+            filType = 'Store ID'
+            filVal = fval
+
             empTable = tables.EmpTable(tables.EmpTable.getEmployeesStore(fval))
             avg_sal = tables.EmpTable.getAvgSalStore(fval)
             avg_hrly = tables.EmpTable.getAvgHrlyStore(fval)
 
         elif ftype == '2':  # Zip
+
+            filType = 'Zip'
+            filVal = fval
 
             empTable = tables.EmpTable(tables.EmpTable.getEmployeesZip(fval))
             avg_sal = tables.EmpTable.getAvgSalZip(fval)
@@ -421,11 +426,17 @@ def employees_page():
 
         elif ftype == '3':  # City
 
+            filType = 'City'
+            filVal = fval
+
             empTable = tables.EmpTable(tables.EmpTable.getEmployeesCity(fval))
             avg_sal = tables.EmpTable.getAvgSalCity(fval)
             avg_hrly = tables.EmpTable.getAvgHrlyCity(fval)
 
         elif ftype == '4': # State
+
+            filType = 'State'
+            filVal = fval
 
             empTable = tables.EmpTable(tables.EmpTable.getEmployeesState(fval))
             avg_sal = tables.EmpTable.getAvgSalState(fval)
@@ -435,6 +446,8 @@ def employees_page():
     return render_template(
         'employees.html',
         form=form,
+        filVal=filVal,
+        filType=filType,
         avg_sal_str=avg_sal_str,
         avg_hourly_str=avg_hourly_str,
         empTable=empTable,
@@ -488,6 +501,9 @@ def products_page():
     numProducts = tables.ProductsTable.getNumProducts()
     numSale = tables.ProductsTable.getNumSale()
 
+    filType = 'None'
+    filVal = 'ALL'
+
     form = forms.ProductFilterForm(request.form)
     
     # Evaluate the form
@@ -497,12 +513,18 @@ def products_page():
 
         if ftype == '1':  # Store
             
+            filType = 'Store'
+            filVal = fval
+
             productsTable = tables.ProductsTable(tables.ProductsTable.getProductsStore(fval))
             avgPrice = tables.ProductsTable.getAvgPriceStore(fval)
             numProducts = tables.ProductsTable.getNumProductsStore(fval)
             numSale = tables.ProductsTable.getNumSaleStore(fval)
 
         elif ftype == '2':  # Zip
+
+            filType = 'Zip'
+            filVal = fval
 
             productsTable = tables.ProductsTable(tables.ProductsTable.getProductsZip(fval))
             avgPrice = tables.ProductsTable.getAvgPriceZip(fval)
@@ -511,6 +533,9 @@ def products_page():
 
         elif ftype == '3':  # City
 
+            filType = 'City'
+            filVal = fval
+
             productsTable = tables.ProductsTable(tables.ProductsTable.getProductsCity(fval))
             avgPrice = tables.ProductsTable.getAvgPriceCity(fval)
             numProducts = tables.ProductsTable.getNumProductsCity(fval)
@@ -518,12 +543,18 @@ def products_page():
 
         elif ftype == '4':  # State
 
+            filType = 'State'
+            filVal = fval
+
             productsTable = tables.ProductsTable(tables.ProductsTable.getProductsState(fval))
             avgPrice = tables.ProductsTable.getAvgPriceState(fval)
             numProducts = tables.ProductsTable.getNumProductsState(fval)
             numSale = tables.ProductsTable.getNumSaleState(fval)
 
         elif ftype == '5':  # Color
+
+            filType = 'Color'
+            filVal = fval
 
             productsTable = tables.ProductsTable(tables.ProductsTable.getProductsColor(fval))
             avgPrice = tables.ProductsTable.getAvgPriceColor(fval)
@@ -533,6 +564,8 @@ def products_page():
     return render_template(
         'products.html',
         form=form,
+        filType=filType,
+        filVal=filVal,
         productsTable=productsTable,
         avgPrice=avgPrice,
         numProducts=numProducts,
