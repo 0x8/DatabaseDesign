@@ -306,6 +306,41 @@ class StoreFilterForm(Form):
     filterVal = StringField(validators=[Required()])
     submit = SubmitField('Filter')
 
+class EmployeeFilterForm(Form):
+    searchChoices = [
+        (0,'Filter type ▼'),
+        (1,'Filter by Store'),
+        (2,'Filter by Zip'),
+        (3,'Filter by City'),
+        (4,'Filter by State')
+    ]
+    filterType = SelectField(
+                    'Choose a search type',
+                    choices=searchChoices,
+                    coerce=int,
+                    validators=[Required()]
+                )
+    filterVal = StringField(validators=[Required()])
+    submit = SubmitField('Filter')
+
+class ProductFilterForm(Form):
+    searchChoices = [
+        (0,'Filter type ▼'),
+        (1,'Filter by Store'),
+        (2,'Filter by Zip'),
+        (3,'Filter by City'),
+        (4,'Filter by State'),
+        (5,'Filter by Color')
+    ]
+    filterType = SelectField(
+                    'Choose a search type',
+                    choices=searchChoices,
+                    coerce=int,
+                    validators=[Required()]
+                )
+    filterVal = StringField(validators=[Required()])
+    submit = SubmitField('Filter')
+
 ##########################
 ## Flask Security Forms ##
 ##########################

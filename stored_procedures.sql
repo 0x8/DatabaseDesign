@@ -570,6 +570,16 @@ SETOF ProdRow AS $$
     ORDER BY P.pid;
 $$ LANGUAGE 'sql' STABLE;
 
+-- Get by color
+CREATE OR REPLACE FUNCTION getProdColor(color TEXT) RETURNS
+SETOF ProdRow AS $$
+    SELECT P.pid, P.name, P.color, I.sid
+    FROM Products P NATURAL JOIN Inventory I
+    WHERE P.pid=I.pid
+    AND LOWER(P.color)=LOWER($1)
+    ORDER BY P.pid;
+$$ LANGUAGE 'sql' STABLE;
+
 -- Get overall average price
 CREATE OR REPLACE FUNCTION getAvgPrice() RETURNS
 FLOAT AS $$
@@ -662,6 +672,25 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Get average price by color
+CREATE OR REPLACE FUNCTION getAvgPriceColor(color TEXT) RETURNS
+FLOAT AS $$
+DECLARE
+    avg_price float := 0.0;
+BEGIN
+    
+    SELECT INTO avg_price ROUND(AVG(I.price),2)
+    FROM Inventory I, Products P
+    WHERE I.pid = P.pid
+    AND LOWER(P.color)=LOWER($1);
+
+    IF avg_price IS NOT NULL
+        THEN RETURN avg_price;
+        ELSE RETURN 0.0;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
 ----- NUMBER OF Products
 -- All stores
 CREATE OR REPLACE FUNCTION getNumProds() RETURNS INT AS $$
@@ -728,6 +757,24 @@ BEGIN
     WHERE P.pid=I.pid
     AND I.sid=S.sid
     AND LOWER(S.state)=LOWER($1);
+
+    IF numProds IS NOT NULL
+        THEN RETURN numProds;
+        ELSE RETURN 0;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- By Color
+CREATE OR REPLACE FUNCTION getNumProdsColor(color TEXT) RETURNS INT AS $$
+DECLARE
+    numProds INT := 0;
+BEGIN
+    
+    SELECT INTO numProds COUNT(DISTINCT P.pid)
+    FROM Products P, Inventory I
+    WHERE P.pid=I.pid
+    AND LOWER(P.color)=LOWER($1);
 
     IF numProds IS NOT NULL
         THEN RETURN numProds;
@@ -839,6 +886,25 @@ BEGIN
     WHERE I.special='True'
     AND I.sid=S.sid
     AND LOWER(S.state)=LOWER($1);
+
+    IF numSale IS NOT NULL
+        THEN RETURN numSale;
+        ELSE RETURN 0;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Color
+CREATE OR REPLACE FUNCTION getNumSaleColor(color TEXT) RETURNS INT AS $$
+DECLARE
+    numSale int := 0;
+BEGIN
+    
+    SELECT INTO numSale COUNT(DISTINCT I.pid)
+    FROM Inventory I, Products P
+    WHERE I.special='True'
+    AND I.pid=P.pid
+    AND LOWER(P.color)=LOWER($1);
 
     IF numSale IS NOT NULL
         THEN RETURN numSale;
