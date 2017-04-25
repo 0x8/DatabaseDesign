@@ -393,6 +393,7 @@ def employees_page():
     avg_sal= tables.EmpTable.getAvgSalAll()
     avg_hrly = tables.EmpTable.getAvgHrlyAll()
 
+    form = forms.EmployeeFilterForm(request.form)
     # For average salary and hourly for zip, city, state, etc
     # avg_sal = tables.EmpTable.getAvgSalCirt(city)
     # avg_hrly = tables.EmpTable.getAvgHrlyCity(city)
@@ -405,6 +406,7 @@ def employees_page():
     empTable = tables.EmpTable(tables.EmpTable.getEmployees())
     return render_template(
         'employees.html',
+        form=form,
         avg_sal_str=avg_sal_str,
         avg_hourly_str=avg_hourly_str,
         sal_dev=sal_dev,
@@ -450,7 +452,7 @@ def addExistingProduct():
         form=form
     )
 
-@app.route('/products')
+@app.route('/products', methods=['GET','POST'])
 @login_required
 def products_page():
 
@@ -460,10 +462,51 @@ def products_page():
     numProducts = tables.ProductsTable.getNumProducts()
     numSale = tables.ProductsTable.getNumSale()
 
-    # Logic to reassign based on form
+    form = forms.ProductFilterForm(request.form)
+    
+    # Evaluate the form
+    if request.method == 'POST' and form.validate():
+        ftype = request.form.get('filterType')
+        fval  = request.form.get('filterVal')
+
+        if ftype == '1':  # Store
+            
+            productsTable = tables.ProductsTable(tables.ProductsTable.getProductsStore(fval))
+            avgPrice = tables.ProductsTable.getAvgPriceStore(fval)
+            numProducts = tables.ProductsTable.getNumProductsStore(fval)
+            numSale = tables.ProductsTable.getNumSaleStore(fval)
+
+        elif ftype == '2':  # Zip
+
+            productsTable = tables.ProductsTable(tables.ProductsTable.getProductsZip(fval))
+            avgPrice = tables.ProductsTable.getAvgPriceZip(fval)
+            numProducts = tables.ProductsTable.getNumProductsZip(fval)
+            numSale = tables.ProductsTable.getNumSaleZip(fval)
+
+        elif ftype == '3':  # City
+
+            productsTable = tables.ProductsTable(tables.ProductsTable.getProductsCity(fval))
+            avgPrice = tables.ProductsTable.getAvgPriceCity(fval)
+            numProducts = tables.ProductsTable.getNumProductsCity(fval)
+            numSale = tables.ProductsTable.getNumSaleCity(fval)
+
+        elif ftype == '4':  # State
+
+            productsTable = tables.ProductsTable(tables.ProductsTable.getProductsState(fval))
+            avgPrice = tables.ProductsTable.getAvgPriceState(fval)
+            numProducts = tables.ProductsTable.getNumProductsState(fval)
+            numSale = tables.ProductsTable.getNumSaleState(fval)
+
+        elif ftype == '5':  # Color
+
+            productsTable = tables.ProductsTable(tables.ProductsTable.getProductsColor(fval))
+            avgPrice = tables.ProductsTable.getAvgPriceColor(fval)
+            numProducts = tables.ProductsTable.getNumProductsColor(fval)
+            numSale = tables.ProductsTable.getNumSaleColor(fval)
 
     return render_template(
         'products.html',
+        form=form,
         productsTable=productsTable,
         avgPrice=avgPrice,
         numProducts=numProducts,
