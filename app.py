@@ -379,38 +379,59 @@ def deleteEmployee():
         form=form
     )
 
-@app.route('/employees')
+@app.route('/employees', methods=['GET','POST'])
 @login_required
 def employees_page():
 
     # Define the dynamic strings to work
     avg_sal_str = 'Average Salary Pay:'
     avg_hourly_str = 'Average Hourly Pay:'
-    sal_dev = 'Standard Deviation, Salary:'
-    hrly_dev = 'Standard Deviation, Hourly:'
 
     # ADD LOGIC BASED ON FORM HERE
     avg_sal= tables.EmpTable.getAvgSalAll()
     avg_hrly = tables.EmpTable.getAvgHrlyAll()
-
-    form = forms.EmployeeFilterForm(request.form)
-    # For average salary and hourly for zip, city, state, etc
-    # avg_sal = tables.EmpTable.getAvgSalCirt(city)
-    # avg_hrly = tables.EmpTable.getAvgHrlyCity(city)
-
-    # For the tables based on zip, city, state, etc
-    # empTable = tables.EmpTable(tables.EmpTable.getCity(city))
-    # empTable = tables.EmpTable(tables.EmpTable.getState(state))
-
+    
     # Define the table itself
     empTable = tables.EmpTable(tables.EmpTable.getEmployees())
+
+    form = forms.EmployeeFilterForm(request.form)
+
+    # Evaluate the form
+    if request.method == 'POST' and form.validate():
+
+        ftype = request.form.get('filterType')
+        fval = request.form.get('filterVal')
+
+        if ftype == '1':  # Store
+            
+            empTable = tables.EmpTable(tables.EmpTable.getEmployeesStore(fval))
+            avg_sal = tables.EmpTable.getAvgSalStore(fval)
+            avg_hrly = tables.EmpTable.getAvgHrlyStore(fval)
+
+        elif ftype == '2':  # Zip
+
+            empTable = tables.EmpTable(tables.EmpTable.getEmployeesZip(fval))
+            avg_sal = tables.EmpTable.getAvgSalZip(fval)
+            avg_hrly = tables.EmpTable.getAvgHrlyZip(fval)
+
+        elif ftype == '3':  # City
+
+            empTable = tables.EmpTable(tables.EmpTable.getEmployeesCity(fval))
+            avg_sal = tables.EmpTable.getAvgSalCity(fval)
+            avg_hrly = tables.EmpTable.getAvgHrlyCity(fval)
+
+        elif ftype == '4': # State
+
+            empTable = tables.EmpTable(tables.EmpTable.getEmployeesState(fval))
+            avg_sal = tables.EmpTable.getAvgSalState(fval)
+            avg_hrly = tables.EmpTable.getAvgHrlyState(fval)
+
+    
     return render_template(
         'employees.html',
         form=form,
         avg_sal_str=avg_sal_str,
         avg_hourly_str=avg_hourly_str,
-        sal_dev=sal_dev,
-        hrly_dev=hrly_dev,
         empTable=empTable,
         avg_sal=avg_sal,
         avg_hrly=avg_hrly
@@ -514,12 +535,6 @@ def products_page():
     ) # Add custom vals
 
 
-
-# TESTING something
-@app.route('/redir')
-@login_required
-def redir():
-    return redirect('/')
 
 @app.route('/testing',methods=['GET','POST'])
 def testing():
