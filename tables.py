@@ -174,6 +174,9 @@ class StoresTable(Table):
         conn.close()
         return result
 
+
+
+
 class EmpTable(Table):
     '''Table container and generation class for Employees'''
 
@@ -295,7 +298,7 @@ class ProductsTable(Table):
         conn.close()
         return result
 
-    def getProductStore(sid):
+    def getProductsStore(sid):
         conn = db.engine.connect()
         result = conn.execute('SELECT * FROM getProdStore({0});'.format(sid))
         conn.close()
@@ -307,18 +310,23 @@ class ProductsTable(Table):
         conn.close()
         return result
 
-    def getProductsZip(city):
+    def getProductsCity(city):
         conn=db.engine.connect()
         result = conn.execute('Select * FROM getProdCity(\'{0}\');'.format(city))
         conn.close()
         return result
 
-    def getProductsZip(state):
+    def getProductsState(state):
         conn=db.engine.connect()
         result = conn.execute('Select * FROM getProdState(\'{0}\');'.format(state))
         conn.close()
         return result
 
+    def getProductsColor(color):
+        conn=db.engine.connect()
+        result = conn.execute('Select * FROM getProdColor(\'{0}\');'.format(color))
+        conn.close()
+        return result
 
     # Averages
     # These return single value so use .first()[0]
@@ -352,6 +360,13 @@ class ProductsTable(Table):
         conn.close()
         return result
 
+    def getAvgPriceColor(color):
+        conn = db.engine.connect()
+        result = conn.execute('SELECT * FROM getAvgPriceColor(\'{0}\');'.format(color)).first()[0]
+        conn.close()
+        return result
+
+
     # Product count
     def getNumProducts():
         conn = db.engine.connect()
@@ -383,6 +398,12 @@ class ProductsTable(Table):
         conn.close()
         return result
 
+    def getNumProductsColor(color):
+        conn = db.engine.connect()
+        result = conn.execute('SELECT * FROM getNumProdsColor(\'{0}\');'.format(color)).first()[0]
+        conn.close()
+        return result
+
     # Num products on Sale
     def getNumSale():
         conn = db.engine.connect()
@@ -411,5 +432,11 @@ class ProductsTable(Table):
     def getNumSaleState(state):
         conn = db.engine.connect()
         result = conn.execute('SELECT * FROM getNumSaleState(\'{0}\');'.format(state)).first()[0]
+        conn.close()
+        return result
+
+    def getNumSaleColor(color):
+        conn = db.engine.connect()
+        result = conn.execute('SELECT * FROM getNumSaleColor(\'{0}\');'.format(color)).first()[0]
         conn.close()
         return result
