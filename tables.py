@@ -266,7 +266,7 @@ class EmpTable(Table):
     def getAvgHrlyCity(city):
         '''Get the average hourly pay based on city'''
         conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM avg_hourly_city(\'{0})\';'.format(city)).first()[0]
+        result = conn.execute('SELECT * FROM avg_hourly_city(\'{0}\');'.format(city)).first()[0]
         conn.close()
         return result
 
