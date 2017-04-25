@@ -245,7 +245,7 @@ class EmpTable(Table):
     def getAvgSalZip(zip):
         '''Get the average salary based on zip'''
         conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM avg_sal_zip(\'{0}\');'.format(zip)).first()[0]
+        result = conn.execute('SELECT * FROM avg_salary_zip(\'{0}\');'.format(zip)).first()[0]
         conn.close()
         return result
 
@@ -259,7 +259,7 @@ class EmpTable(Table):
     def getAvgSalCity(city):
         '''Get the average salary based on city'''
         conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM avg_sal_city(\'{0}\');'.format(city)).first()[0]
+        result = conn.execute('SELECT * FROM avg_salary_city(\'{0}\');'.format(city)).first()[0]
         conn.close()
         return result
 
@@ -272,13 +272,25 @@ class EmpTable(Table):
 
     def getAvgSalState(state):
         conn = db.engine.connect()
-        result = conn.execute('SELECT * FROM avg_sal_state(\'{0}\');'.format(state)).first()[0]
+        result = conn.execute('SELECT * FROM avg_salary_state(\'{0}\');'.format(state)).first()[0]
         conn.close()
         return result
 
     def getAvgHrlyState(state):
         conn = db.engine.connect()
         result = conn.execute('SELECT * FROM avg_hourly_state(\'{0}\');'.format(state)).first()[0]
+        conn.close()
+        return result
+
+    def getAvgSalStore(sid):
+        conn = db.engine.connect()
+        result = conn.execute('SELECT * FROM avg_salary_store({0});'.format(sid)).first()[0]
+        conn.close()
+        return result
+
+    def getAvgHrlyStore(sid):
+        conn = db.engine.connect()
+        result = conn.execute('SELECT * FROM avg_hourly_store({0});'.format(sid)).first()[0]
         conn.close()
         return result
 
