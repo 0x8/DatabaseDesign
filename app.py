@@ -104,6 +104,11 @@ security = Security(app, user_datastore,
                     register_form=forms.ExtendedRegisterForm)
 forms.security = security
 
+admin_role = user_datastore.create_role(
+    name='admin',
+    description='Administrator'
+)
+
 # Make sure flask-security doesn't send any mail ever
 @security.send_mail_task
 def dont_send_mail_hack(msg):
