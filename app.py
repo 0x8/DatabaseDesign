@@ -52,11 +52,9 @@ from flask_security import login_required
 # Misc
 from passlib.hash import bcrypt_sha256
 import click
-from decimal import Decimal
 
 # Project local stuff
 import datagenerator
-import query
 
 
 
@@ -124,33 +122,13 @@ def security_register_processor():
     return dict(username="email")
 
 
-############
-# QUERYING #
-############
+######################
+# CLICK CLI COMMANDS #
+######################
 
 def get_db():
     '''Sets up a psycopg2 database connection as configured in config.py'''
     return psycopg2.connect(**app.config['PSYCOPG2_LOGIN_INFO'])
-
-def run_query(query_type, args):
-    '''Runs the given query on the database'''
-    args = {k:(v if v else None) for k,v in args.items()}
-    with getdb() as conn:
-        cur = conn.cursor()
-        cur.execute(query.queries[query_type], args)
-        rows = [list(row) for row in cur.fetchall()]
-        for row in rows:
-            for i, value in enumerate(row):
-                if isinstance(value, Decimal):
-                    row[i] = '{:.2f}'.format(value)
-        return ([col[0] for col in cur.description], rows)
-
-
-
-
-######################
-# CLICK CLI COMMANDS #
-######################
 
 @app.cli.command('initdb')
 @click.argument('number', default=20)
